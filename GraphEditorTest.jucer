@@ -6,9 +6,13 @@
     <GROUP id="{9DC20804-CE4E-B6A9-0518-28F65B81B0B5}" name="Source">
       <FILE id="eG34mx" name="GraphEditorPanel.cpp" compile="1" resource="0"
             file="Source/GraphEditorPanel.cpp"/>
+      <FILE id="bY4SrO" name="InternalNodeGraph.cpp" compile="1" resource="0"
+            file="Source/InternalNodeGraph.cpp"/>
       <FILE id="Z4Q7DG" name="GraphEditorPanel.h" compile="0" resource="0"
             file="Source/GraphEditorPanel.h"/>
       <FILE id="pajIrQ" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="XjFi5w" name="InternalNodeGraph.h" compile="0" resource="0"
+            file="Source/InternalNodeGraph.h"/>
       <FILE id="HCBkfd" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="Ae4fXz" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
