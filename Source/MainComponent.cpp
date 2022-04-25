@@ -1,8 +1,12 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent()
+MainComponent::MainComponent() : viewport("")
 {
+    addAndMakeVisible(viewport);
+    viewport.setViewedComponent(new GraphEditorPanel(graph), true);
+    viewport.getViewedComponent()->setSize(1000, 1000);
+
     setSize (600, 400);
 }
 
@@ -23,6 +27,8 @@ void MainComponent::paint (juce::Graphics& g)
 
 void MainComponent::resized()
 {
+    viewport.setBounds(getLocalBounds());
+
     // This is called when the MainComponent is resized.
     // If you add any child components, this is where you should
     // update their positions.

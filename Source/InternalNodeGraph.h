@@ -10,6 +10,15 @@
 
 #pragma once
 #include <JuceHeader.h>
+#include "ByteCodeProcessor.h"
+
+enum NodeType
+{
+    Void,
+	Expression,
+    Output,
+    Parameter
+};
 
 class InternalNodeGraph : public juce::ChangeBroadcaster,
 							private juce::AsyncUpdater
@@ -62,14 +71,15 @@ public:
 
 
 
-        virtual float getNextSample();
+        virtual void processNextValue();
 
 
         juce::NamedValueSet properties;
 
-        using Ptr = juce::ReferenceCountedObjectPtr<Node>;
-    private:
+        juce::Atomic<float> outValue;
 
+        using Ptr = juce::ReferenceCountedObjectPtr<Node>;
+    protected:
         struct Connection
         {
             Node* otherNode;
@@ -80,6 +90,12 @@ public:
 
         juce::Array<Connection> inputs, outputs;
 
+
+
+    private:
+
+
+
         Node (NodeID n) noexcept;
 
         juce::CriticalSection lock;
@@ -89,14 +105,68 @@ public:
 
 
 
+    class ExpressionNode : public Node
+    {
+
+        void processNextValue() override
+        {
+	         for (auto c : inputs)
+            {
+                auto cValue =  c.otherNode->outValue.get();
+	            if (c.otherChannel <= 4)
+	            {
+		            inputValues[c.otherChannel] += cValue;
+	            }
+
+            }
+
+             outValue.set(processor->process(inputValues, t));
+        }
+
+    private:
+        float inputValues[4];
+        float t;
+        std::unique_ptr<ByteCodeProcessor> processor;
 
 
+    };
 
+
+    class OutputNode : public Node
+    {
+    public:
+	    float getNextSample()
+        {
+            float value = 0;
+            for (auto c : inputs)
+            {
+                if (c.thisChannel == 0)
+                {
+	                value += c.otherNode->outValue.get();
+                }
+            }
+
+	    	return static_cast<juce::uint8>(value) / 128.f - 1.f ;
+        }
+
+
+    };
+
+    class ParameterNode : public Node
+    {
+	    void processNextValue()
+	    {
+		    outValue.set(parameter.get());
+	    }
+
+	    juce::AudioProcessorValueTreeState::Parameter& parameter;
+        //juce::AudioParameterFloat&
+    };
 
 
     struct Connection
     {
-	    Connection() = default;
+	    Connection();
         Connection (NodeAndChannel source, NodeAndChannel destination) noexcept;
 
         Connection (const Connection&) = default;
@@ -125,7 +195,7 @@ public:
 
     Node* getNodeForId (NodeID) const;
 
-    Node::Ptr addNode (type, NodeID nodeId = {});
+    Node::Ptr addNode (NodeType nodeType, NodeID nodeId = {});
 
     Node::Ptr removeNode (NodeID);
 

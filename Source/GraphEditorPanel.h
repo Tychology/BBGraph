@@ -16,47 +16,47 @@
 class GraphEditorPanel   : public juce::Component,
                            public juce::ChangeListener
 {
-	GraphEditorPanel (InternalNodeGraph& g) : graph(g)
-	{
-		graph.addChangeListener (this);
-		setOpaque (true);
-	}
+    struct PinComponent;
+    struct NodeComponent;
+    struct ConnectorComponent;
 
-    ~GraphEditorPanel()
-	{
-		graph.removeChangeListener (this);
-	    draggingConnector = nullptr;
-	    nodes.clear();
-	    connectors.clear();
-	}
 
-    void createNewNode();
+    struct ExpressionNodeComponent;
+    struct OutputNodeComponent;
+    struct ParameterNodeComponent;
+
+public:
+	GraphEditorPanel (InternalNodeGraph& g);
+
+    ~GraphEditorPanel() override;
+
+    void createNewNode(NodeType nodeType, juce::Point<int> position);
 
     void setNodePosition (InternalNodeGraph::NodeID, juce::Point<double>);
 	juce::Point<double> getNodePosition (InternalNodeGraph::NodeID) const;
 
 
-    void paint (juce::Graphics& g)
-{
+    void paint (juce::Graphics& g) override
+    {
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 }
 
-    void mouseDown (const juce::MouseEvent& e)
-{
+    void mouseDown (const juce::MouseEvent& e) override
+    {
 
     if (e.mods.isPopupMenu())
         showPopupMenu (e.position.toInt());
 }
 
-    void resized()
-{
+    void resized() override
+    {
     updateComponents();
 }
 
-void changeListenerCallback (juce::ChangeBroadcaster*)
-{
-    updateComponents();
-}
+	void changeListenerCallback (juce::ChangeBroadcaster*) override
+	{
+	    updateComponents();
+	}
 
     void updateComponents();
 
@@ -72,9 +72,7 @@ void changeListenerCallback (juce::ChangeBroadcaster*)
     InternalNodeGraph& graph;
 
 private:
-    struct NodeComponent;
-    struct ConnectorComponent;
-    struct PinComponent;
+
 
     NodeComponent* getComponentForNode (InternalNodeGraph::NodeID) const;
     ConnectorComponent* getComponentForConnection (const InternalNodeGraph::Connection&) const;

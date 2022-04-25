@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "GraphEditorPanel.h"
 
 //==============================================================================
 /*
@@ -21,6 +22,10 @@ public:
 private:
     //==============================================================================
     // Your private member variables go here...
+
+    juce::Viewport viewport;
+    InternalNodeGraph graph;
+    //GraphEditorPanel panel;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
