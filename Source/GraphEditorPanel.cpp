@@ -76,7 +76,7 @@ struct GraphEditorPanel::PinComponent   : public Component,
 struct GraphEditorPanel::NodeComponent : public Component, // private AudioProcessorParameter::Listener,
                                          private juce::AsyncUpdater
 {
-    NodeComponent (GraphEditorPanel& p, InternalNodeGraph::NodeID id) : panel (p), graph (p.graph), nodeID (id)
+    NodeComponent (GraphEditorPanel& p, InternalNodeGraph::NodeID id, int numIns, int numOuts) : panel (p), graph (p.graph), nodeID (id), numInputs(numIns), numOutputs(numOuts)
     {
 	    shadow.setShadowProperties (juce::DropShadow (juce::Colours::black.withAlpha (0.5f), 3, { 0, 1 }));
         setComponentEffect (&shadow);
@@ -245,7 +245,7 @@ struct GraphEditorPanel::NodeComponent : public Component, // private AudioProce
     InternalNodeGraph& graph;
     const InternalNodeGraph::NodeID nodeID;
     juce::OwnedArray<PinComponent> pins;
-    int numInputs = 0, numOutputs = 0;
+    int numInputs, numOutputs;
      int pinSize = 16;
     juce::Point<int> originalPos;
     juce::Font font { 13.0f, juce::Font::bold };
@@ -455,10 +455,8 @@ struct GraphEditorPanel::ConnectorComponent   : public Component,
 struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
 {
 
-    ExpressionNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id)
+    ExpressionNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id, 4, 1)
     {
-        numInputs = 4;
-		numOutputs = 1;
 
 	    addAndMakeVisible(textBox);
         textBox.setMultiLine(false);
@@ -490,8 +488,6 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
     }
 
 
-    int numInputs = 4;
-    int numOutputs = 1;
 
 	juce::TextEditor textBox;
 };
@@ -499,10 +495,8 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
 
 struct GraphEditorPanel::OutputNodeComponent : NodeComponent
 {
-    OutputNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id)
+    OutputNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id, 1, 0)
     {
-	    numInputs = 1;
-		numOutputs = 0;
     }
 
      void showPopupMenu() override
@@ -516,11 +510,9 @@ struct GraphEditorPanel::OutputNodeComponent : NodeComponent
 struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 {
 
-    ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id),
+    ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id, 0, 1),
 	range(juce::NormalisableRange<float>())
     {
-        numInputs = 0;
-        numOutputs = 1;
 
 	    addAndMakeVisible(paramSlider);
 
@@ -632,9 +624,28 @@ void GraphEditorPanel::updateComponents()
     {
         if (getComponentForNode (f->nodeID) == nullptr)
         {
-            auto* comp = nodes.add (new NodeComponent (*this, f->nodeID));
-            addAndMakeVisible (comp);
-            comp->update();
+	        if (auto* expf = dynamic_cast<InternalNodeGraph::ExpressionNode*>(f))
+	        {
+		        auto* comp = nodes.add(new ExpressionNodeComponent(*this, f->nodeID));
+		        addAndMakeVisible(comp);
+		        comp->update();
+	        }
+	        else if (auto* outf = dynamic_cast<InternalNodeGraph::OutputNode*>(f))
+	        {
+		        auto* comp = nodes.add(new OutputNodeComponent(*this, f->nodeID));
+		        addAndMakeVisible(comp);
+		        comp->update();
+	        }
+	        else if (auto* paramf = dynamic_cast<InternalNodeGraph::ParameterNode*>(f))
+	        {
+		        auto* comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID));
+		        addAndMakeVisible(comp);
+		        comp->update();
+	        }
+	        else
+	        {
+		        jassertfalse;
+	        }
         }
     }
 

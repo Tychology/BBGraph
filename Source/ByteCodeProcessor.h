@@ -16,5 +16,5 @@ class ByteCodeProcessor
 
 public:
 
-    float process(float* inputs, float t);
+    float process(float* inputs, float t) {return 0;};
 };

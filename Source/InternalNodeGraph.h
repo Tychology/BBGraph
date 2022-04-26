@@ -71,7 +71,7 @@ public:
 
 
 
-        virtual void processNextValue();
+        virtual void processNextValue() {}
 
 
         juce::NamedValueSet properties;
@@ -80,23 +80,34 @@ public:
 
         using Ptr = juce::ReferenceCountedObjectPtr<Node>;
     protected:
+        friend class InternalNodeGraph;
+
         struct Connection
         {
             Node* otherNode;
             int otherChannel, thisChannel;
 
-            bool operator== (const Connection&) const noexcept;
+            bool operator==(const Connection& other) const noexcept
+            {
+	            return otherNode == other.otherNode
+		            && thisChannel == other.thisChannel
+		            && otherChannel == other.otherChannel;
+            }
         };
 
         juce::Array<Connection> inputs, outputs;
 
+        Node (NodeID n) noexcept : nodeID(n)
+        {
+
+        }
 
 
     private:
 
 
+        void setParentGraph (InternalNodeGraph*) const;
 
-        Node (NodeID n) noexcept;
 
         juce::CriticalSection lock;
 
@@ -107,6 +118,11 @@ public:
 
     class ExpressionNode : public Node
     {
+    public:
+
+        ExpressionNode(NodeID n) : Node(n)
+        {
+        }
 
         void processNextValue() override
         {
@@ -124,6 +140,8 @@ public:
         }
 
     private:
+
+
         float inputValues[4];
         float t;
         std::unique_ptr<ByteCodeProcessor> processor;
@@ -135,6 +153,8 @@ public:
     class OutputNode : public Node
     {
     public:
+        OutputNode(NodeID n) : Node(n) {}
+
 	    float getNextSample()
         {
             float value = 0;
@@ -154,12 +174,22 @@ public:
 
     class ParameterNode : public Node
     {
+    public:
+        ParameterNode(NodeID n) : Node(n)
+        {
+
+        }
+
 	    void processNextValue()
 	    {
-		    outValue.set(parameter.get());
+            if (parameter != nullptr)
+				outValue.set(parameter->get());
+            else outValue.set(0);
 	    }
 
-	    juce::AudioProcessorValueTreeState::Parameter& parameter;
+
+    private:
+	    juce::AudioProcessorValueTreeState::Parameter* parameter;
         //juce::AudioParameterFloat&
     };
 
@@ -205,7 +235,7 @@ public:
 
     bool isConnected (const Connection&) const noexcept;
 
-    bool isConnected (NodeID possibleSourceNodeID, NodeID possibleDestNodeID) const noexcept;
+    bool isConnected (NodeID srcID, NodeID destID) const noexcept;
 
     bool isAnInputTo (Node& source, Node& destination) const noexcept;
 
@@ -235,8 +265,8 @@ public:
 
     bool isConnected (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept;
     bool isAnInputTo (Node& src, Node& dst, int recursionCheck) const noexcept;
-    bool canConnect (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept;
-    bool isLegal (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept;
+    bool canConnect (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept; //IMPLEMENT
+    bool isLegal (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept; //IMPLEMENT
     static void getNodeConnections (Node&, std::vector<Connection>&);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (InternalNodeGraph)
