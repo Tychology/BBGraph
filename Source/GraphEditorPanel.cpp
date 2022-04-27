@@ -36,11 +36,12 @@ struct GraphEditorPanel::PinComponent   : public Component,
         auto w = (float) getWidth();
         auto h = (float) getHeight();
 
+         auto colour = juce::Colours::red;
         juce::Path p;
         p.addEllipse (w * 0.25f, h * 0.25f, w * 0.5f, h * 0.5f);
         p.addRectangle (w * 0.4f, isInput ? (0.5f * h) : 0.0f, w * 0.2f, h * 0.5f);
 
-        auto colour = juce::Colours::red;
+
 
 
         g.fillPath (p);
@@ -94,14 +95,14 @@ struct GraphEditorPanel::NodeComponent : public Component, // private AudioProce
 
 
 
-        setSize (150, 60);
+        //setSize (150, 60);
     }
 
     void mouseDown (const juce::MouseEvent& e) override
     {
         originalPos = localPointToGlobal (juce::Point<int>());
 
-        toFront (true);
+        toFront (false);
 
 
     	if (e.mods.isPopupMenu())
@@ -191,8 +192,15 @@ struct GraphEditorPanel::NodeComponent : public Component, // private AudioProce
 			                   pinSize, pinSize);
 		    }
 	    }
+
+        onResize();
     }
 
+
+    virtual void onResize()
+    {
+
+    }
 
     juce::Point<float> getPinPos (int index, bool isInput) const
     {
@@ -210,17 +218,17 @@ struct GraphEditorPanel::NodeComponent : public Component, // private AudioProce
 
 
 
-        int w = 100;
-        int h = 60;
+        //int w = getWidth();
+        //int h = getHeight();
 
-        w = juce::jmax (w, (juce::jmax (numInputs, numOutputs) + 1) * 20);
+        //w = juce::jmax (w, (juce::jmax (numInputs, numOutputs) + 1) * 20);
 
-        const int textWidth = 300;//font.getStringWidth (processor.getName());
-        w = juce::jmax (w, 16 + juce::jmin (textWidth, 300));
-        if (textWidth > 300)
-            h = 100;
+        //const int textWidth = 300;//font.getStringWidth (processor.getName());
+        //w = juce::jmax (w, 16 + juce::jmin (textWidth, 300));
+        //if (textWidth > 300)
+        //    h = 100;
 
-        setSize (w, h);
+        //setSize (w, h);
         //setName (processor.getName() + formatSuffix);
 
 
@@ -460,12 +468,18 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
 
 	    addAndMakeVisible(textBox);
         textBox.setMultiLine(false);
+        textBox.setFont(font);
 
         auto* node = graph.getNodeForId(nodeID);
         textBox.setText(node->properties.getWithDefault("Expression", ""));
 
 
         textBox.onReturnKey = [this] ()
+		{
+            unfocusAllComponents();
+        };
+
+        textBox.onFocusLost = [this] ()
 		{
             if(auto* node = static_cast<InternalNodeGraph::ExpressionNode*>(graph.getNodeForId(nodeID)))
             {
@@ -475,9 +489,22 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
 				//node.parse(expressionString);
             }
 
+        };
+
+        textBox.onTextChange = [this] ()
+		{
+            auto textWidth = font.getStringWidthFloat(textBox.getText());
+            auto w = juce::jmin(juce::jmax(textWidth + characterWidth + pinSize * 2, defaultWidth), maxWidth);
+        	setSize(w, getHeight());
 
         };
 
+        characterWidth = font.getStringWidthFloat("0");
+
+        defaultWidth = characterWidth * 16 + pinSize * 2;
+        maxWidth = characterWidth * 64 + pinSize * 2;
+
+        setSize(defaultWidth, font.getHeight() + pinSize * 4);
 
 
     }
@@ -487,9 +514,24 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
 
     }
 
+    void onResize() override
+    {
 
+        auto bounds = getLocalBounds();
+
+        bounds.reduce(pinSize, pinSize * 1.75);
+
+
+	    textBox.setBounds(bounds);
+    }
+
+private:
 
 	juce::TextEditor textBox;
+    juce::Font font {juce::Font::getDefaultMonospacedFontName(), 20, 0};
+    float characterWidth;
+    float defaultWidth;
+    float maxWidth;
 };
 
 

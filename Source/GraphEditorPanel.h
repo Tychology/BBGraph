@@ -43,7 +43,7 @@ public:
 
     void mouseDown (const juce::MouseEvent& e) override
     {
-
+    	unfocusAllComponents();
     if (e.mods.isPopupMenu())
         showPopupMenu (e.position.toInt());
 }
