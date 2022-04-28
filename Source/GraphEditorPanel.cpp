@@ -511,7 +511,19 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
 
     void showPopupMenu() override
     {
+                menu.reset (new juce::PopupMenu);
+        menu->addItem (1, "Delete");
+        menu->addItem (2, "Disconnect all pins");
 
+         menu->showMenuAsync ({}, juce::ModalCallbackFunction::create
+                             ([this] (int r) {
+        switch (r)
+        {
+            case 1:   graph.removeNode (nodeID); break;
+            case 2:   graph.disconnectNode (nodeID); break;
+
+        }
+        }));
     }
 
     void onResize() override
@@ -539,12 +551,40 @@ struct GraphEditorPanel::OutputNodeComponent : NodeComponent
 {
     OutputNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id, 1, 0)
     {
+
+        addAndMakeVisible(outSymbol);
+
+        juce::Path path;
+        auto constexpr pi = juce::MathConstants<float>::pi;
+        path.addArc(0, 0, 50, 50, pi * 1.5, pi * 2.5, true);
+        juce::Line<float> line(25, 25, 25, 55);
+        path.addArrow(line, 1, 25, 12);
+
+        outSymbol.setPath(path);
+        outSymbol.setFill(juce::FillType(juce::Colours::transparentBlack));
+        outSymbol.setStrokeType(juce::PathStrokeType(12, juce::PathStrokeType::JointStyle::curved, juce::PathStrokeType::EndCapStyle::rounded));
+        outSymbol.setStrokeFill(juce::FillType(juce::Colours::limegreen));
+
+
+
+        setSize(pinSize * 5, pinSize * 6);
+    }
+
+    void onResize() override
+    {
+        auto centre = getLocalBounds().getCentre();
+
+        juce::Rectangle<float> outSymbolArea(centre.x - pinSize, centre.y - pinSize, pinSize * 2, pinSize * 2);
+
+        outSymbol.setTransformToFit(outSymbolArea, juce::RectanglePlacement::centred);
     }
 
      void showPopupMenu() override
     {
 
     }
+
+     juce::DrawablePath outSymbol;
 
 };
 
@@ -584,12 +624,19 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
             maxLabel.setText(juce::String(value), juce::dontSendNotification);
         };
 
+        setSize(100, 100);
 
     }
 
      void showPopupMenu() override
     {
 
+    }
+
+
+    void onResize() override
+    {
+	    paramSlider.setBounds(getLocalBounds());
     }
 
 
@@ -666,28 +713,28 @@ void GraphEditorPanel::updateComponents()
     {
         if (getComponentForNode (f->nodeID) == nullptr)
         {
+            NodeComponent* comp;
+
 	        if (auto* expf = dynamic_cast<InternalNodeGraph::ExpressionNode*>(f))
 	        {
-		        auto* comp = nodes.add(new ExpressionNodeComponent(*this, f->nodeID));
-		        addAndMakeVisible(comp);
-		        comp->update();
+		        comp = nodes.add(new ExpressionNodeComponent(*this, f->nodeID));
 	        }
 	        else if (auto* outf = dynamic_cast<InternalNodeGraph::OutputNode*>(f))
 	        {
-		        auto* comp = nodes.add(new OutputNodeComponent(*this, f->nodeID));
-		        addAndMakeVisible(comp);
-		        comp->update();
+		        comp = nodes.add(new OutputNodeComponent(*this, f->nodeID));
 	        }
 	        else if (auto* paramf = dynamic_cast<InternalNodeGraph::ParameterNode*>(f))
 	        {
-		        auto* comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID));
-		        addAndMakeVisible(comp);
-		        comp->update();
+		        comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID));
 	        }
 	        else
 	        {
 		        jassertfalse;
+                continue;
 	        }
+
+            addAndMakeVisible(comp);
+        	comp->update();
         }
     }
 

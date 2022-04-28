@@ -51,7 +51,7 @@ public:
     void resized() override
     {
     updateComponents();
-}
+	}
 
 	void changeListenerCallback (juce::ChangeBroadcaster*) override
 	{

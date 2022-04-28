@@ -120,7 +120,7 @@ InternalNodeGraph::Node::Ptr InternalNodeGraph::addNode(NodeType nodeType, NodeI
     topologyChanged();
     return n;
 
-	return {};
+
 }
 
 InternalNodeGraph::Node::Ptr InternalNodeGraph::removeNode(NodeID nodeID)
