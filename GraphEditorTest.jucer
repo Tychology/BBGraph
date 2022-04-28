@@ -17,6 +17,8 @@
             file="Source/ByteCodeProcessor.h"/>
       <FILE id="XjFi5w" name="InternalNodeGraph.h" compile="0" resource="0"
             file="Source/InternalNodeGraph.h"/>
+      <FILE id="zgQnMS" name="LookAndFeelDemo.h" compile="0" resource="0"
+            file="Source/LookAndFeelDemo.h"/>
       <FILE id="HCBkfd" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="Ae4fXz" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>

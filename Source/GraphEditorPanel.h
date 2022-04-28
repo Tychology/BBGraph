@@ -13,6 +13,16 @@
 
 #include "InternalNodeGraph.h"
 
+#include "LookAndFeelDemo.h"
+
+
+struct LookAndFeel : juce::LookAndFeel_V4
+{
+	void drawRotarySlider(juce::Graphics&, int x, int y, int width, int height, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider&) override;
+};
+
+
+
 class GraphEditorPanel   : public juce::Component,
                            public juce::ChangeListener
 {

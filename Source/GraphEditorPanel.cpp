@@ -11,6 +11,67 @@
 #include "GraphEditorPanel.h"
 
 
+void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
+	float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider)
+{
+	using namespace juce;
+	auto bounds = Rectangle<float>(x, y, width, height);
+    auto center = bounds.getCentre();
+
+    g.setColour(juce::Colours::red);
+    g.drawRect(bounds, 2);
+
+    bounds.reduce((width-height)/2 + 10, 10);
+
+
+    g.setColour(juce::Colours::grey);
+    g.fillEllipse(bounds);
+
+
+	Path p;
+
+	Rectangle<float> r;
+	r.setLeft(center.getX() - 2);
+	r.setRight(center.getX() + 2);
+	r.setTop(bounds.getY() + 5);
+	r.setBottom(center.getY() - 20);
+
+	p.addRoundedRectangle(r, 2.f);
+
+	jassert(rotaryStartAngle < rotaryEndAngle);
+
+	auto sliderAngRad = jmap(sliderPosProportional, 0.f, 1.f, rotaryStartAngle, rotaryEndAngle);
+
+	p.applyTransform(AffineTransform().rotated(sliderAngRad, center.getX(), center.getY()));
+
+	g.setColour(juce::Colours::white);
+	g.fillPath(p);
+
+
+	r.setLeft(center.getX() - 2);
+	r.setRight(center.getX() + 2);
+	r.setTop(bounds.getY() - 15);
+	r.setBottom(bounds.getY() - 5);
+	p.clear();
+	p.addRoundedRectangle(r, 2.f);
+	p.applyTransform(AffineTransform().rotated(rotaryStartAngle, center.getX(), center.getY()));
+
+	g.setColour(juce::Colours::white);
+	g.fillPath(p);
+
+    r.setLeft(center.getX() - 2);
+	r.setRight(center.getX() + 2);
+	r.setTop(bounds.getY() - 15);
+	r.setBottom(bounds.getY() - 5);
+	p.clear();
+	p.addRoundedRectangle(r, 2.f);
+	p.applyTransform(AffineTransform().rotated(rotaryEndAngle, center.getX(), center.getY()));
+
+    g.fillPath(p);
+
+}
+
+
 struct GraphEditorPanel::PinComponent   : public Component,
                                           public juce::SettableTooltipClient
 {
@@ -42,7 +103,7 @@ struct GraphEditorPanel::PinComponent   : public Component,
         p.addRectangle (w * 0.4f, isInput ? (0.5f * h) : 0.0f, w * 0.2f, h * 0.5f);
 
 
-
+        g.setColour(colour);
 
         g.fillPath (p);
     }
@@ -597,6 +658,10 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
     {
 
 	    addAndMakeVisible(paramSlider);
+        paramSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+        paramSlider.setNumDecimalPlacesToDisplay(2);
+        paramSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, paramSlider.getTextBoxWidth(), paramSlider.getTextBoxHeight());
+        paramSlider.setLookAndFeel(&laf);
 
         //we need to get the Parameter ID
    /*     sliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
@@ -624,8 +689,16 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
             maxLabel.setText(juce::String(value), juce::dontSendNotification);
         };
 
-        setSize(100, 100);
+    	minLabel.setText(juce::String(range.start), juce::dontSendNotification);
+        maxLabel.setText(juce::String(range.end), juce::dontSendNotification);
 
+        setSize(200, 200);
+
+    }
+
+    ~ParameterNodeComponent() override
+    {
+	    paramSlider.setLookAndFeel(nullptr);
     }
 
      void showPopupMenu() override
@@ -636,17 +709,32 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 
     void onResize() override
     {
-	    paramSlider.setBounds(getLocalBounds());
+        auto bounds = getLocalBounds();
+
+        bounds.removeFromTop(pinSize);
+        auto lableArea = bounds.removeFromBottom(pinSize * 3);
+        lableArea.removeFromBottom(pinSize * 1.5);
+        lableArea.reduce(pinSize * 0.5, 0);
+
+
+        bounds.reduce((bounds.getWidth()-bounds.getHeight() )/ 2, 0);
+	    paramSlider.setBounds(bounds);
+
+        minLabel.setBounds(lableArea.removeFromLeft(proportionOfWidth(0.5)));
+        maxLabel.setBounds(lableArea);
     }
 
 
 	juce::Slider paramSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachment;
     juce::NormalisableRange<float>& range;
-
     juce::Label minLabel, maxLabel;
 
+   LookAndFeel laf;
+
 };
+
+
 
 
 GraphEditorPanel::GraphEditorPanel(InternalNodeGraph& g): graph(g)
