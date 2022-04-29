@@ -573,21 +573,19 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
 
     void showPopupMenu() override
     {
-	    menu.reset(new juce::PopupMenu);
-	    menu->addItem(1, "Delete");
-	    menu->addItem(2, "Disconnect all pins");
+                menu.reset (new juce::PopupMenu);
+        menu->addItem (1, "Delete");
+        menu->addItem (2, "Disconnect all pins");
 
-	    menu->showMenuAsync({}, juce::ModalCallbackFunction::create
-	                        ([this](int r)
-	                        {
-		                        switch (r)
-		                        {
-		                        case 1: graph.removeNode(nodeID);
-			                        break;
-		                        case 2: graph.disconnectNode(nodeID);
-			                        break;
-		                        }
-	                        }));
+         menu->showMenuAsync ({}, juce::ModalCallbackFunction::create
+                             ([this] (int r) {
+        switch (r)
+        {
+            case 1:   graph.removeNode (nodeID); break;
+            case 2:   graph.disconnectNode (nodeID); break;
+
+        }
+        }));
     }
 
     void onResize() override
@@ -645,21 +643,7 @@ struct GraphEditorPanel::OutputNodeComponent : NodeComponent
 
      void showPopupMenu() override
     {
-         	    menu.reset(new juce::PopupMenu);
-	    menu->addItem(1, "Delete");
-	    menu->addItem(2, "Disconnect all pins");
 
-	    menu->showMenuAsync({}, juce::ModalCallbackFunction::create
-	                        ([this](int r)
-	                        {
-		                        switch (r)
-		                        {
-		                        case 1: graph.removeNode(nodeID);
-			                        break;
-		                        case 2: graph.disconnectNode(nodeID);
-			                        break;
-		                        }
-	                        }));
     }
 
      juce::DrawablePath outSymbol;
@@ -720,37 +704,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 
      void showPopupMenu() override
     {
-    	menu.reset(new juce::PopupMenu);
-	    menu->addItem(1, "Delete");
-	    menu->addItem(2, "Disconnect all pins");
-        menu->addSeparator();
 
-        if (isLogarithmic)
-        {
-	         menu->addItem(3, "Make parameter linear");
-        }
-        else
-        {
-	        menu->addItem(4, "Make parameter logarithmic");
-        }
-
-
-
-	    menu->showMenuAsync({}, juce::ModalCallbackFunction::create
-	                        ([this](int r)
-	                        {
-		                        switch (r)
-		                        {
-		                        case 1: graph.removeNode(nodeID);
-			                        break;
-		                        case 2: graph.disconnectNode(nodeID);
-			                        break;
-		                        case 3: setLogarithmic(false);
-                                    break;
-		                        case 4: setLogarithmic(true);
-                                    break;
-		                        }
-	                        }));
     }
 
 
@@ -771,14 +725,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
         maxLabel.setBounds(lableArea);
     }
 
-    void setLogarithmic(bool b)
-    {
-        isLogarithmic = b;
 
-
-    }
-
-    bool isLogarithmic = false;
 	juce::Slider paramSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachment;
     juce::NormalisableRange<float>& range;
