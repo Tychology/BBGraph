@@ -138,7 +138,8 @@ struct GraphEditorPanel::PinComponent   : public Component,
 struct GraphEditorPanel::NodeComponent : public Component, // private AudioProcessorParameter::Listener,
                                          private juce::AsyncUpdater
 {
-    NodeComponent (GraphEditorPanel& p, InternalNodeGraph::NodeID id, int numIns, int numOuts) : panel (p), graph (p.graph), nodeID (id), numInputs(numIns), numOutputs(numOuts)
+    NodeComponent (GraphEditorPanel& p, InternalNodeGraph::NodeID id)
+	: panel (p), graph (p.graph), nodeID (id), numInputs(graph.getNodeForId(nodeID)->getNumInputs()), numOutputs(graph.getNodeForId(nodeID)->getNumOutputs())
     {
 	    shadow.setShadowProperties (juce::DropShadow (juce::Colours::black.withAlpha (0.5f), 3, { 0, 1 }));
         setComponentEffect (&shadow);
@@ -524,7 +525,7 @@ struct GraphEditorPanel::ConnectorComponent   : public Component,
 struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
 {
 
-    ExpressionNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id, 4, 1)
+    ExpressionNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id)
     {
 
 	    addAndMakeVisible(textBox);
@@ -610,7 +611,7 @@ private:
 
 struct GraphEditorPanel::OutputNodeComponent : NodeComponent
 {
-    OutputNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id, 1, 0)
+    OutputNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id)
     {
 
         addAndMakeVisible(outSymbol);
@@ -653,7 +654,7 @@ struct GraphEditorPanel::OutputNodeComponent : NodeComponent
 struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 {
 
-    ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id, 0, 1),
+    ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id),
 	range(juce::NormalisableRange<float>())
     {
 

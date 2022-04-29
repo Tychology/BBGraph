@@ -79,6 +79,9 @@ public:
         juce::Atomic<float> outValue;
 
         using Ptr = juce::ReferenceCountedObjectPtr<Node>;
+
+           auto getNumInputs() {return numInputs;}
+		auto getNumOutputs() {return numOutputs;}
     protected:
         friend class InternalNodeGraph;
 
@@ -97,16 +100,19 @@ public:
 
         juce::Array<Connection> inputs, outputs;
 
-        Node (NodeID n) noexcept : nodeID(n)
+        Node (NodeID n, int numIns, int numOuts) noexcept : nodeID(n), numInputs(numIns), numOutputs(numOuts)
         {
 
         }
+
 
 
     private:
 
 
         void setParentGraph (InternalNodeGraph*) const;
+
+        int numInputs, numOutputs;
 
 
         juce::CriticalSection lock;
@@ -120,7 +126,7 @@ public:
     {
     public:
 
-        ExpressionNode(NodeID n) : Node(n)
+        ExpressionNode(NodeID n) : Node(n, 4, 1)
         {
         }
 
@@ -153,7 +159,7 @@ public:
     class OutputNode : public Node
     {
     public:
-        OutputNode(NodeID n) : Node(n) {}
+        OutputNode(NodeID n) : Node(n, 1, 0) {}
 
 	    float getNextSample()
         {
@@ -175,7 +181,7 @@ public:
     class ParameterNode : public Node
     {
     public:
-        ParameterNode(NodeID n) : Node(n)
+        ParameterNode(NodeID n) : Node(n, 0, 1)
         {
 
         }
@@ -257,6 +263,7 @@ public:
     NodeID lastNodeID = {};
 
 
+
     void topologyChanged();
     void unprepare();
     void handleAsyncUpdate() override;
@@ -265,8 +272,9 @@ public:
 
     bool isConnected (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept;
     bool isAnInputTo (Node& src, Node& dst, int recursionCheck) const noexcept;
-    bool canConnect (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept; //IMPLEMENT
+    bool canConnect (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept;
     bool isLegal (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept; //IMPLEMENT
+    bool loopCheck(Node* src, Node* dest) const noexcept;//IMPLEMENT
     static void getNodeConnections (Node&, std::vector<Connection>&);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (InternalNodeGraph)

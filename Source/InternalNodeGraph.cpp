@@ -228,10 +228,26 @@ bool InternalNodeGraph::isAnInputTo (Node& src, Node& dst, int recursionCheck) c
     return false;
 }
 
-//IMPLEMENT
+
 bool InternalNodeGraph::canConnect (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept
 {
-    return false;
+
+    if (sourceChannel < 0
+         || destChannel < 0
+         || src == dest)
+        return false;
+
+    if (src == nullptr
+         || sourceChannel >= src->getNumOutputs())
+        return false;
+
+    if (dest == nullptr
+         || destChannel >= dest->getNumInputs())
+        return false;
+
+    if (loopCheck(src, dest)) return false;
+
+    return ! isConnected (src, sourceChannel, dest, destChannel);
 }
 
 bool InternalNodeGraph::canConnect(const Connection& c) const
@@ -339,6 +355,12 @@ bool InternalNodeGraph::removeIllegalConnections()
     }
 
     return anyRemoved;
+}
+
+//IMPLEMENT
+  bool InternalNodeGraph::loopCheck(Node* src, Node* dest) const noexcept
+{
+    return false;
 }
 
 void InternalNodeGraph::topologyChanged()
