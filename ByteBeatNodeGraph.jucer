@@ -9,9 +9,21 @@
             file="Source/PluginProcessor.cpp"/>
       <FILE id="IeTe14" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
+      <FILE id="Sua4ZR" name="ByteCodeProcessor.cpp" compile="1" resource="0"
+            file="Source/ByteCodeProcessor.cpp"/>
       <FILE id="WGkHbC" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
+      <FILE id="a7gj3I" name="ByteCodeProcessor.h" compile="0" resource="0"
+            file="Source/ByteCodeProcessor.h"/>
+      <FILE id="Rq9gqo" name="GraphEditorPanel.cpp" compile="1" resource="0"
+            file="Source/GraphEditorPanel.cpp"/>
       <FILE id="ZtwJJj" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="dRfLFJ" name="InternalNodeGraph.cpp" compile="1" resource="0"
+            file="Source/InternalNodeGraph.cpp"/>
+      <FILE id="dyOPSL" name="GraphEditorPanel.h" compile="0" resource="0"
+            file="Source/GraphEditorPanel.h"/>
+      <FILE id="hrfqOv" name="InternalNodeGraph.h" compile="0" resource="0"
+            file="Source/InternalNodeGraph.h"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>

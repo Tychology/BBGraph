@@ -10,6 +10,8 @@
 
 #include <JuceHeader.h>
 
+#include "InternalNodeGraph.h"
+
 //==============================================================================
 /**
 */
@@ -55,5 +57,10 @@ public:
 
 private:
     //==============================================================================
+
+    InternalNodeGraph graph;
+    //std::unique_ptr<InternalNodeGraph> graph;
+
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ByteBeatNodeGraphAudioProcessor)
 };

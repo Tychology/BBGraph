@@ -19,76 +19,17 @@ ByteBeatNodeGraphAudioProcessor::ByteBeatNodeGraphAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
 #endif
+    graph(*this, 0)
 {
+
 }
 
 ByteBeatNodeGraphAudioProcessor::~ByteBeatNodeGraphAudioProcessor()
 {
 }
 
-//==============================================================================
-const juce::String ByteBeatNodeGraphAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool ByteBeatNodeGraphAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool ByteBeatNodeGraphAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool ByteBeatNodeGraphAudioProcessor::isMidiEffect() const
-{
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-double ByteBeatNodeGraphAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
-int ByteBeatNodeGraphAudioProcessor::getNumPrograms()
-{
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
-}
-
-int ByteBeatNodeGraphAudioProcessor::getCurrentProgram()
-{
-    return 0;
-}
-
-void ByteBeatNodeGraphAudioProcessor::setCurrentProgram (int index)
-{
-}
-
-const juce::String ByteBeatNodeGraphAudioProcessor::getProgramName (int index)
-{
-    return {};
-}
-
-void ByteBeatNodeGraphAudioProcessor::changeProgramName (int index, const juce::String& newName)
-{
-}
 
 //==============================================================================
 void ByteBeatNodeGraphAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
@@ -188,4 +129,68 @@ void ByteBeatNodeGraphAudioProcessor::setStateInformation (const void* data, int
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new ByteBeatNodeGraphAudioProcessor();
+}
+
+
+
+//==============================================================================
+const juce::String ByteBeatNodeGraphAudioProcessor::getName() const
+{
+    return JucePlugin_Name;
+}
+
+bool ByteBeatNodeGraphAudioProcessor::acceptsMidi() const
+{
+   #if JucePlugin_WantsMidiInput
+    return true;
+   #else
+    return false;
+   #endif
+}
+
+bool ByteBeatNodeGraphAudioProcessor::producesMidi() const
+{
+   #if JucePlugin_ProducesMidiOutput
+    return true;
+   #else
+    return false;
+   #endif
+}
+
+bool ByteBeatNodeGraphAudioProcessor::isMidiEffect() const
+{
+   #if JucePlugin_IsMidiEffect
+    return true;
+   #else
+    return false;
+   #endif
+}
+
+double ByteBeatNodeGraphAudioProcessor::getTailLengthSeconds() const
+{
+    return 0.0;
+}
+
+int ByteBeatNodeGraphAudioProcessor::getNumPrograms()
+{
+    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
+                // so this should be at least 1, even if you're not really implementing programs.
+}
+
+int ByteBeatNodeGraphAudioProcessor::getCurrentProgram()
+{
+    return 0;
+}
+
+void ByteBeatNodeGraphAudioProcessor::setCurrentProgram (int index)
+{
+}
+
+const juce::String ByteBeatNodeGraphAudioProcessor::getProgramName (int index)
+{
+    return {};
+}
+
+void ByteBeatNodeGraphAudioProcessor::changeProgramName (int index, const juce::String& newName)
+{
 }

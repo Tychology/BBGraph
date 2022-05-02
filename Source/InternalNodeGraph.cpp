@@ -10,7 +10,7 @@
 
 #include "InternalNodeGraph.h"
 
-InternalNodeGraph::InternalNodeGraph()
+InternalNodeGraph::InternalNodeGraph(ByteBeatNodeGraphAudioProcessor& p, int i) : audioProcessor(p)
 {
 }
 
@@ -58,7 +58,7 @@ bool InternalNodeGraph::Connection::operator< (const Connection& other) const no
 
 void InternalNodeGraph::clear()
 {
-    // const juce::ScopedLock sl (getCallbackLock());
+     const juce::ScopedLock sl (audioProcessor.getCallbackLock());
 
     if (nodes.isEmpty())
         return;
