@@ -10,6 +10,82 @@
 
 #include "InternalNodeGraph.h"
 
+
+struct  GraphRenderSequence
+{
+
+    GraphRenderSequence (InternalNodeGraph& g) : graph(g), orderedNodes(createOrderedNodeList(graph))
+    {}
+
+
+
+
+    using Node = InternalNodeGraph::Node;
+
+    InternalNodeGraph& graph;
+    const juce::Array<Node*> orderedNodes;
+
+
+
+
+
+      static void getAllParentsOfNode (const Node* child,
+                                     std::unordered_set<Node*>& parents,
+                                     const std::unordered_map<Node*, std::unordered_set<Node*>>& otherParents)
+    {
+        for (auto&& i : child->inputs)
+        {
+            auto* parentNode = i.otherNode;
+
+            if (parentNode == child)
+                continue;
+
+            if (parents.insert (parentNode).second)
+            {
+                auto parentParents = otherParents.find (parentNode);
+
+                if (parentParents != otherParents.end())
+                {
+                    parents.insert (parentParents->second.begin(), parentParents->second.end());
+                    continue;
+                }
+
+                getAllParentsOfNode (i.otherNode, parents, otherParents);
+            }
+        }
+    }
+
+    static juce::Array<Node*> createOrderedNodeList (const InternalNodeGraph& graph)
+    {
+	    juce::Array<Node*> result;
+
+        std::unordered_map<Node*, std::unordered_set<Node*>> nodeParents;
+
+        for (auto* node : graph.getNodes())
+        {
+            int insertionIndex = 0;
+
+            for (; insertionIndex < result.size(); ++insertionIndex)
+            {
+                auto& parents = nodeParents[result.getUnchecked (insertionIndex)];
+
+                if (parents.find (node) != parents.end())
+                    break;
+            }
+
+            result.insert (insertionIndex, node);
+            getAllParentsOfNode (node, nodeParents[node], nodeParents);
+        }
+
+        return result;
+    }
+};
+
+
+
+
+
+
 InternalNodeGraph::InternalNodeGraph(ByteBeatNodeGraphAudioProcessor& p, int i) : audioProcessor(p)
 {
 }
@@ -366,10 +442,43 @@ bool InternalNodeGraph::removeIllegalConnections()
 void InternalNodeGraph::topologyChanged()
 {
      sendChangeMessage();
+
+    if (isPrepared)
+    {
+    	if (juce::MessageManager::getInstance()->isThisTheMessageThread())
+			handleAsyncUpdate();
+		else
+			triggerAsyncUpdate();}
+
 }
 
 void InternalNodeGraph::handleAsyncUpdate()
 {
+     buildRenderingSequence();
+}
+
+void InternalNodeGraph::clearRenderingSequence()
+{
+        std::unique_ptr<GraphRenderSequence> oldSequence;
+
+    {
+        const juce::ScopedLock sl (audioProcessor.getCallbackLock());
+        std::swap (renderSequence, oldSequence);
+    }
+}
+
+void InternalNodeGraph::buildRenderingSequence()
+{
+
+    auto newSequence = std::make_unique<GraphRenderSequence>();
+
+    const juce::ScopedLock sl (audioProcessor.getCallbackLock());
+
+
+    isPrepared = true;
+
+    std::swap(renderSequence, newSequence);
+
 }
 
 

@@ -86,6 +86,7 @@ public:
 		auto getNumOutputs() {return numOutputs;}
     protected:
         friend class InternalNodeGraph;
+        friend struct GraphRenderSequence;
 
         struct Connection
         {
@@ -266,13 +267,21 @@ private:
     NodeID lastNodeID = {};
 
 
+     struct GraphRenderSequence;
+     std::unique_ptr<GraphRenderSequence> renderSequence;
+
+     std::atomic<bool> isPrepared { false };
 
 
     void topologyChanged();
     void unprepare();
     void handleAsyncUpdate() override;
 
+
+        void clearRenderingSequence();
+    void buildRenderingSequence();
     bool anyNodesNeedPreparing() const noexcept;
+
 
     bool isConnected (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept;
     bool isAnInputTo (Node& src, Node& dst, int recursionCheck) const noexcept;
