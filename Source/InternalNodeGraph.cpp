@@ -425,7 +425,7 @@ bool InternalNodeGraph::disconnectNode(NodeID nodeID)
 //IMPLEMENT
 bool InternalNodeGraph::isLegal (Node* src, int sourceChannel, Node* dest, int destChannel) const noexcept
 {
-	return false;
+	return !loopCheck(src, dest);
 }
 
 bool InternalNodeGraph::isConnectionLegal(const Connection& c) const
@@ -467,7 +467,7 @@ float InternalNodeGraph::getNextSample()
 //IMPLEMENT
   bool InternalNodeGraph::loopCheck(Node* src, Node* dest) const noexcept
 {
-    return false;
+	return  dest->feedsInto(src->nodeID);
 }
 
 void InternalNodeGraph::topologyChanged()

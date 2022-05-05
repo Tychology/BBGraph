@@ -85,6 +85,20 @@ public:
 
            auto getNumInputs() {return numInputs;}
 		auto getNumOutputs() {return numOutputs;}
+
+        bool feedsInto(NodeID id)
+        {
+	        for (auto c : outputs)
+	        {
+		        if (c.otherNode->nodeID == id) return true;
+
+		        if (c.otherNode->feedsInto(id)) return true;
+	        }
+
+	        return false;
+        }
+
+
     protected:
         friend class InternalNodeGraph;
         friend struct GraphRenderSequence;
