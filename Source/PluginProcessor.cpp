@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "InternalNodeGraph.h"
 
 //==============================================================================
 ByteBeatNodeGraphAudioProcessor::ByteBeatNodeGraphAudioProcessor()
@@ -21,7 +22,7 @@ ByteBeatNodeGraphAudioProcessor::ByteBeatNodeGraphAudioProcessor()
                      #endif
                        ),
 #endif
-    graph(*this, 0)
+    graph(this)
 {
 
 }

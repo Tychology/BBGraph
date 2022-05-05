@@ -11,7 +11,8 @@
 #pragma once
 #include <JuceHeader.h>
 #include "ByteCodeProcessor.h"
-#include "PluginProcessor.h"
+
+class ByteBeatNodeGraphAudioProcessor;
 
 enum NodeType
 {
@@ -26,7 +27,7 @@ class InternalNodeGraph : public juce::ChangeBroadcaster,
 {
 public:
     /** Creates an empty graph. */
-	InternalNodeGraph(ByteBeatNodeGraphAudioProcessor& p, int i);
+	explicit InternalNodeGraph(ByteBeatNodeGraphAudioProcessor* p);
 
 
     /** Destructor.
@@ -262,7 +263,7 @@ public:
 
 
 private:
-    ByteBeatNodeGraphAudioProcessor& audioProcessor;
+    ByteBeatNodeGraphAudioProcessor* audioProcessor;
     juce::ReferenceCountedArray<Node> nodes;
     NodeID lastNodeID = {};
 

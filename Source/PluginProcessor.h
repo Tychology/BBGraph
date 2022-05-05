@@ -9,13 +9,15 @@
 #pragma once
 
 #include <JuceHeader.h>
-
 #include "InternalNodeGraph.h"
+
+//class InternalNodeGraph;
 
 //==============================================================================
 /**
 */
 class ByteBeatNodeGraphAudioProcessor  : public juce::AudioProcessor
+
 {
 public:
     //==============================================================================
@@ -54,6 +56,8 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+
+    InternalNodeGraph& getGraph() { return graph; }
 
 private:
     //==============================================================================

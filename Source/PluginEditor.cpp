@@ -13,7 +13,7 @@
 
 //==============================================================================
 ByteBeatNodeGraphAudioProcessorEditor::ByteBeatNodeGraphAudioProcessorEditor (ByteBeatNodeGraphAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor (&p), audioProcessor (p), graph(p.getGraph())
 {
     addAndMakeVisible(viewport);
     viewport.setViewedComponent(new GraphEditorPanel(graph), true);

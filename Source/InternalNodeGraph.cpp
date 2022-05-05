@@ -9,9 +9,10 @@
 */
 
 #include "InternalNodeGraph.h"
+#include "PluginProcessor.h"
 
 
-struct  GraphRenderSequence
+struct  InternalNodeGraph::GraphRenderSequence
 {
 
     GraphRenderSequence (InternalNodeGraph& g) : graph(g), orderedNodes(createOrderedNodeList(graph))
@@ -86,8 +87,9 @@ struct  GraphRenderSequence
 
 
 
-InternalNodeGraph::InternalNodeGraph(ByteBeatNodeGraphAudioProcessor& p, int i) : audioProcessor(p)
+InternalNodeGraph::InternalNodeGraph(ByteBeatNodeGraphAudioProcessor* p) : audioProcessor(p)
 {
+
 }
 
 InternalNodeGraph::~InternalNodeGraph()
@@ -134,7 +136,7 @@ bool InternalNodeGraph::Connection::operator< (const Connection& other) const no
 
 void InternalNodeGraph::clear()
 {
-     const juce::ScopedLock sl (audioProcessor.getCallbackLock());
+     const juce::ScopedLock sl (audioProcessor->getCallbackLock());
 
     if (nodes.isEmpty())
         return;
@@ -459,10 +461,10 @@ void InternalNodeGraph::handleAsyncUpdate()
 
 void InternalNodeGraph::clearRenderingSequence()
 {
-        std::unique_ptr<GraphRenderSequence> oldSequence;
+    auto oldSequence = std::make_unique< GraphRenderSequence>(*this);
 
     {
-        const juce::ScopedLock sl (audioProcessor.getCallbackLock());
+        const juce::ScopedLock sl (audioProcessor->getCallbackLock());
         std::swap (renderSequence, oldSequence);
     }
 }
@@ -470,9 +472,9 @@ void InternalNodeGraph::clearRenderingSequence()
 void InternalNodeGraph::buildRenderingSequence()
 {
 
-    auto newSequence = std::make_unique<GraphRenderSequence>();
+    auto newSequence = std::make_unique<GraphRenderSequence>(*this);
 
-    const juce::ScopedLock sl (audioProcessor.getCallbackLock());
+    const juce::ScopedLock sl (audioProcessor->getCallbackLock());
 
 
     isPrepared = true;
