@@ -20,11 +20,30 @@ struct  InternalNodeGraph::GraphRenderSequence
 
 
 
-
-    using Node = InternalNodeGraph::Node;
-
     InternalNodeGraph& graph;
     const juce::Array<Node*> orderedNodes;
+
+
+    float getNextSample()
+    {
+        float sampleValue = 0.f;
+
+        for (auto node : orderedNodes)
+        {
+            jassert(node != nullptr);
+
+            if (auto outputNode = dynamic_cast<OutputNode*>(node))
+            {
+	            sampleValue += outputNode->getNextSample();
+            }
+            else
+            {
+	            node->processNextValue();
+            }
+        }
+
+        return sampleValue;
+    }
 
 
 
@@ -433,6 +452,16 @@ bool InternalNodeGraph::removeIllegalConnections()
     }
 
     return anyRemoved;
+}
+
+float InternalNodeGraph::getNextSample()
+{
+    if (renderSequence != nullptr)
+    {
+	    return renderSequence->getNextSample();
+    }
+
+    return 0.f;
 }
 
 //IMPLEMENT

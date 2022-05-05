@@ -261,7 +261,7 @@ public:
 
     bool removeIllegalConnections();
 
-
+    float getNextSample();
 private:
     ByteBeatNodeGraphAudioProcessor* audioProcessor;
     juce::ReferenceCountedArray<Node> nodes;
