@@ -11,6 +11,9 @@
 #include <JuceHeader.h>
 #include "InternalNodeGraph.h"
 
+
+#define ExprNodeNumIns = 4
+
 //class InternalNodeGraph;
 
 //==============================================================================

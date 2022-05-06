@@ -22,6 +22,11 @@
             file="Source/InternalNodeGraph.cpp"/>
       <FILE id="dyOPSL" name="GraphEditorPanel.h" compile="0" resource="0"
             file="Source/GraphEditorPanel.h"/>
+      <FILE id="WonIXp" name="SynthVoice.cpp" compile="1" resource="0" file="Source/SynthVoice.cpp"/>
+      <FILE id="UUTNu4" name="SynthVoice.h" compile="0" resource="0" file="Source/SynthVoice.h"/>
+      <FILE id="lRK5bA" name="NodeProcessor.cpp" compile="1" resource="0"
+            file="Source/NodeProcessor.cpp"/>
+      <FILE id="FFGlUs" name="NodeProcessor.h" compile="0" resource="0" file="Source/NodeProcessor.h"/>
       <FILE id="hrfqOv" name="InternalNodeGraph.h" compile="0" resource="0"
             file="Source/InternalNodeGraph.h"/>
     </GROUP>

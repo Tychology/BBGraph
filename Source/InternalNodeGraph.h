@@ -163,12 +163,14 @@ public:
              outValue.set(processor->process(inputValues, t));
         }
 
+        std::unique_ptr<ByteCodeProcessor> processor;
+
     private:
 
 
-        float inputValues[4];
+        std::vector<float> inputValues;
         float t;
-        std::unique_ptr<ByteCodeProcessor> processor;
+
 
 
     };

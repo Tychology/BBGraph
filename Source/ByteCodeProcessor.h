@@ -16,5 +16,5 @@ class ByteCodeProcessor
 
 public:
 
-    float process(float* inputs, float t) {return 0;};
+    float process(std::vector<float>& inpuValues, float t) {return 0;};
 };
