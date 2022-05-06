@@ -10,20 +10,64 @@
 
 #include "InternalNodeGraph.h"
 #include "PluginProcessor.h"
+#include "NodeProcessor.h"
 
 
 struct  InternalNodeGraph::GraphRenderSequence
 {
 
-    GraphRenderSequence (InternalNodeGraph& g) : graph(g), orderedNodes(createOrderedNodeList(graph))
-    {}
+    GraphRenderSequence (InternalNodeGraph& g) : graph(g), orderedNodes(createOrderedNodeList(graph)), numNodes(orderedNodes.size())
+    {
+        for (int i = 0; i < numNodes; ++i)
+        {
+            nodeIDtoIndex.insert({orderedNodes[i]->nodeID, i});
+        }
 
 
 
-    InternalNodeGraph& graph;
-    const juce::Array<Node*> orderedNodes;
+    }
 
 
+
+
+
+
+
+    NodeProcessorSequence* createNodeProcessorSequence()
+    {
+	    auto sequence = new NodeProcessorSequence();
+
+        for (int i = 0; i < orderedNodes.size(); ++i)
+        {
+            auto node = orderedNodes[i];
+	        if (auto exprNode = dynamic_cast<ExpressionNode*>(node))
+	        {
+                auto processor = new ExpressionNodeProcessor(*exprNode->processor);
+
+                for (auto c : node->inputs)
+                {
+                    processor->inputs[c.thisChannel].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID]].get());
+                }
+
+		        sequence->processors.add(processor);
+	        }
+            else if (auto outputNode = dynamic_cast<OutputNode*>(node))
+            {
+
+
+	            sequence->processors.add(new OutputNodeProcessor());
+            }
+
+        }
+
+
+        return sequence;
+    }
+
+
+
+
+    /*
     float getNextSample()
     {
         float sampleValue = 0.f;
@@ -43,8 +87,11 @@ struct  InternalNodeGraph::GraphRenderSequence
         }
 
         return sampleValue;
-    }
+    }*/
 
+
+
+    private:
 
 
 
@@ -99,6 +146,12 @@ struct  InternalNodeGraph::GraphRenderSequence
 
         return result;
     }
+
+    std::unordered_map<NodeID, int> nodeIDtoIndex;
+
+        InternalNodeGraph& graph;
+    const juce::Array<Node*> orderedNodes;
+    const int numNodes;
 };
 
 
@@ -456,10 +509,10 @@ bool InternalNodeGraph::removeIllegalConnections()
 
 float InternalNodeGraph::getNextSample()
 {
-    if (renderSequence != nullptr)
-    {
-	    return renderSequence->getNextSample();
-    }
+    //if (renderSequence != nullptr)
+    //{
+	   // return renderSequence->getNextSample();
+    //}
 
     return 0.f;
 }
