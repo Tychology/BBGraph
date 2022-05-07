@@ -11,6 +11,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "ByteCodeProcessor.h"
+#include "Defines.h"
 
 class ByteBeatNodeGraphAudioProcessor;
 
@@ -144,7 +145,7 @@ public:
     {
     public:
 
-        ExpressionNode(NodeID n) : Node(n, 4, 1)
+        ExpressionNode(NodeID n) : Node(n, expr_node_num_ins, 1)
         {
         }
 
@@ -153,7 +154,7 @@ public:
 	         for (auto c : inputs)
             {
                 auto cValue =  c.otherNode->outValue.get();
-	            if (c.otherChannel <= 4)
+	            if (c.otherChannel <= expr_node_num_ins)
 	            {
 		            inputValues[c.otherChannel] += cValue;
 	            }
