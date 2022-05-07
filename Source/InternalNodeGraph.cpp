@@ -39,6 +39,8 @@ struct  InternalNodeGraph::GraphRenderSequence
 
         for (int i = 0; i < orderedNodes.size(); ++i)
         {
+
+
             auto node = orderedNodes[i];
 	        if (auto exprNode = dynamic_cast<ExpressionNode*>(node))
 	        {
@@ -46,6 +48,7 @@ struct  InternalNodeGraph::GraphRenderSequence
 
                 for (auto c : node->inputs)
                 {
+
                     processor->inputs[c.thisChannel].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID]].get());
                 }
 
@@ -54,9 +57,19 @@ struct  InternalNodeGraph::GraphRenderSequence
             else if (auto outputNode = dynamic_cast<OutputNode*>(node))
             {
 
+                auto processor = new OutputNodeProcessor();
 
-	            sequence->processors.add(new OutputNodeProcessor());
+                for (auto c : node->inputs)
+                {
+                	processor->inputs[c.thisChannel].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID]].get());
+                }
+	            sequence->processors.add(processor);
             }
+            else if (auto paramNode = dynamic_cast<ParameterNode*>(node))
+            {
+                sequence->processors.add(new ParameterNodeProcessor(paramNode.getParam));
+            }
+            else jassertfalse;
 
         }
 
