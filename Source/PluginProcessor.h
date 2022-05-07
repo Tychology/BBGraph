@@ -12,7 +12,6 @@
 #include "InternalNodeGraph.h"
 
 
-#define ExprNodeNumIns = 4
 
 //class InternalNodeGraph;
 
@@ -62,9 +61,11 @@ public:
 
     InternalNodeGraph& getGraph() { return graph; }
 
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+
 private:
     //==============================================================================
-
+    juce::AudioProcessorValueTreeState apvts;
     InternalNodeGraph graph;
     //std::unique_ptr<InternalNodeGraph> graph;
 

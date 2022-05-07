@@ -21,8 +21,10 @@ ByteBeatNodeGraphAudioProcessor::ByteBeatNodeGraphAudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        ),
+#elif
+    :
 #endif
-    graph(this)
+    graph(this), apvts(*this, nullptr, "apvts", createParameters())
 {
 
 }
@@ -131,6 +133,21 @@ void ByteBeatNodeGraphAudioProcessor::setStateInformation (const void* data, int
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout ByteBeatNodeGraphAudioProcessor::createParameters()
+{
+     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+
+    //Implement a range that is switchble between linear and logarithmic
+     juce::NormalisableRange<float> defaultRange{0, 127};
+
+     for (int i = 1; i <= total_num_prams; ++i)
+     {
+         params.push_back(std::make_unique<juce::AudioParameterFloat>("Param" + i, "Parameter " + i, defaultRange, 0));
+     }
+
+     return {params.begin(), params.end()};
 }
 
 //==============================================================================
