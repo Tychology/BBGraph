@@ -12,6 +12,7 @@
 #include <JuceHeader.h>
 #include "ByteCodeProcessor.h"
 #include "Defines.h"
+#include "ParameterManager.h"
 
 class ByteBeatNodeGraphAudioProcessor;
 
@@ -28,7 +29,7 @@ class InternalNodeGraph : public juce::ChangeBroadcaster,
 {
 public:
     /** Creates an empty graph. */
-	explicit InternalNodeGraph(ByteBeatNodeGraphAudioProcessor* p);
+	explicit InternalNodeGraph(ByteBeatNodeGraphAudioProcessor* p, ParameterManager& paramManager);
 
 
     /** Destructor.
@@ -202,22 +203,32 @@ public:
     class ParameterNode : public Node
     {
     public:
-        ParameterNode(NodeID n) : Node(n, 0, 1)
+        ParameterNode(NodeID n, ParameterManager& paramManager) : Node(n, 0, 1), parameter(paramManager.newConnection()), parameterManager(paramManager)
         {
 
         }
 
+        ~ParameterNode()
+        {
+            parameterManager.removeConection(parameter);
+        }
+
 	    void processNextValue()
 	    {
-            if (parameter != nullptr)
+            /*if (parameter != nullptr)
 				outValue.set(parameter->get());
-            else outValue.set(0);
+            else outValue.set(0);*/
+
+            outValue.set(parameter.get());
 	    }
 
+	    //juce::AudioProcessorValueTreeState::Parameter* parameter;
+
+        juce::AudioParameterFloat& parameter;
 
     private:
-	    juce::AudioProcessorValueTreeState::Parameter* parameter;
-        //juce::AudioParameterFloat&
+        ParameterManager& parameterManager;
+
     };
 
 
@@ -281,6 +292,7 @@ public:
     float getNextSample();
 private:
     ByteBeatNodeGraphAudioProcessor* audioProcessor;
+    ParameterManager& parameterManager;
     juce::ReferenceCountedArray<Node> nodes;
     NodeID lastNodeID = {};
 

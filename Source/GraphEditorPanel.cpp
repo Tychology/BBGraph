@@ -10,9 +10,11 @@
 
 #include "GraphEditorPanel.h"
 
+#include "PluginProcessor.h"
+
 
 void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
-	float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider)
+                                   float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider)
 {
 	using namespace juce;
 	auto bounds = Rectangle<float>(x, y, width, height);
@@ -643,7 +645,19 @@ struct GraphEditorPanel::OutputNodeComponent : NodeComponent
 
      void showPopupMenu() override
     {
+                menu.reset (new juce::PopupMenu);
+        menu->addItem (1, "Delete");
+        menu->addItem (2, "Disconnect all pins");
 
+         menu->showMenuAsync ({}, juce::ModalCallbackFunction::create
+                             ([this] (int r) {
+        switch (r)
+        {
+            case 1:   graph.removeNode (nodeID); break;
+            case 2:   graph.disconnectNode (nodeID); break;
+
+        }
+        }));
     }
 
      juce::DrawablePath outSymbol;
@@ -654,8 +668,8 @@ struct GraphEditorPanel::OutputNodeComponent : NodeComponent
 struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 {
 
-    ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id) : NodeComponent(p, id),
-	range(juce::NormalisableRange<float>())
+    ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id, juce::AudioProcessorValueTreeState& apvts, juce::AudioParameterFloat& param) : NodeComponent(p, id),
+	range(param.range)
     {
 
 	    addAndMakeVisible(paramSlider);
@@ -664,11 +678,10 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
         paramSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, paramSlider.getTextBoxWidth(), paramSlider.getTextBoxHeight());
         paramSlider.setLookAndFeel(&laf);
 
-        //we need to get the Parameter ID
-   /*     sliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-            audioProcessor.getApvts(), paramID, paramSlider);
+        auto paramID = param.getParameterID();
 
-        range = static_cast<juce::AudioParameterFloat*>(audioProcessor.getApvts().getParameter(paramID))->range;*/
+        sliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
+            apvts, paramID, paramSlider);
 
 
         addAndMakeVisible(minLabel);
@@ -693,6 +706,11 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
     	minLabel.setText(juce::String(range.start), juce::dontSendNotification);
         maxLabel.setText(juce::String(range.end), juce::dontSendNotification);
 
+        addAndMakeVisible(paramName);
+        paramName.setEditable(false);
+        paramName.setText(param.getName(100), juce::dontSendNotification);
+        paramName.setJustificationType(juce::Justification::centred);
+
         setSize(200, 200);
 
     }
@@ -702,9 +720,21 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 	    paramSlider.setLookAndFeel(nullptr);
     }
 
-     void showPopupMenu() override
+   void showPopupMenu() override
     {
+    	menu.reset (new juce::PopupMenu);
+        menu->addItem (1, "Delete");
+        menu->addItem (2, "Disconnect all pins");
 
+    	menu->showMenuAsync ({}, juce::ModalCallbackFunction::create
+                             ([this] (int r) {
+        switch (r)
+        {
+            case 1:   graph.removeNode (nodeID); break;
+            case 2:   graph.disconnectNode (nodeID); break;
+
+        }
+        }));
     }
 
 
@@ -713,6 +743,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
         auto bounds = getLocalBounds();
 
         bounds.removeFromTop(pinSize);
+        paramName.setBounds(bounds.removeFromTop(pinSize));
         auto lableArea = bounds.removeFromBottom(pinSize * 3);
         lableArea.removeFromBottom(pinSize * 1.5);
         lableArea.reduce(pinSize * 0.5, 0);
@@ -729,7 +760,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 	juce::Slider paramSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachment;
     juce::NormalisableRange<float>& range;
-    juce::Label minLabel, maxLabel;
+    juce::Label minLabel, maxLabel, paramName;
 
    LookAndFeel laf;
 
@@ -738,7 +769,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 
 
 
-GraphEditorPanel::GraphEditorPanel(InternalNodeGraph& g): graph(g)
+GraphEditorPanel::GraphEditorPanel(juce::AudioProcessorValueTreeState& apvts, InternalNodeGraph& g): graph(g), apvts(apvts)
 {
 	graph.addChangeListener (this);
 	setOpaque (true);
@@ -814,7 +845,7 @@ void GraphEditorPanel::updateComponents()
 	        }
 	        else if (auto* paramf = dynamic_cast<InternalNodeGraph::ParameterNode*>(f))
 	        {
-		        comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID));
+		        comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID, apvts, paramf->parameter));
 	        }
 	        else
 	        {

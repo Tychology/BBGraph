@@ -29,6 +29,10 @@
             file="Source/NodeProcessor.cpp"/>
       <FILE id="ZOukmk" name="Defines.h" compile="0" resource="0" file="Source/Defines.h"/>
       <FILE id="FFGlUs" name="NodeProcessor.h" compile="0" resource="0" file="Source/NodeProcessor.h"/>
+      <FILE id="mftZD8" name="ParameterManager.cpp" compile="1" resource="0"
+            file="Source/ParameterManager.cpp"/>
+      <FILE id="Jd4l2D" name="ParameterManager.h" compile="0" resource="0"
+            file="Source/ParameterManager.h"/>
       <FILE id="hrfqOv" name="InternalNodeGraph.h" compile="0" resource="0"
             file="Source/InternalNodeGraph.h"/>
     </GROUP>

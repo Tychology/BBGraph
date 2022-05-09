@@ -36,7 +36,7 @@ class GraphEditorPanel   : public juce::Component,
     struct ParameterNodeComponent;
 
 public:
-	GraphEditorPanel (InternalNodeGraph& g);
+	GraphEditorPanel (juce::AudioProcessorValueTreeState& apvts, InternalNodeGraph& g);
 
     ~GraphEditorPanel() override;
 
@@ -82,6 +82,8 @@ public:
     InternalNodeGraph& graph;
 
 private:
+
+    juce::AudioProcessorValueTreeState& apvts;
 
 
     NodeComponent* getComponentForNode (InternalNodeGraph::NodeID) const;

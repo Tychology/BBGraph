@@ -20,17 +20,12 @@ struct  InternalNodeGraph::GraphRenderSequence
     {
         for (int i = 0; i < numNodes; ++i)
         {
-            nodeIDtoIndex.insert({orderedNodes[i]->nodeID, i});
+            nodeIDtoIndex.insert({orderedNodes[i]->nodeID.uid, i});
         }
 
 
 
     }
-
-
-
-
-
 
 
     NodeProcessorSequence* createNodeProcessorSequence()
@@ -49,7 +44,7 @@ struct  InternalNodeGraph::GraphRenderSequence
                 for (auto c : node->inputs)
                 {
 
-                    processor->inputs[c.thisChannel].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID]].get());
+                    processor->inputs[c.thisChannel].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID.uid]].get());
                 }
 
 		        sequence->processors.add(processor);
@@ -61,13 +56,13 @@ struct  InternalNodeGraph::GraphRenderSequence
 
                 for (auto c : node->inputs)
                 {
-                	processor->inputs[c.thisChannel].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID]].get());
+                	processor->inputs[c.thisChannel].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID.uid]].get());
                 }
 	            sequence->processors.add(processor);
             }
             else if (auto paramNode = dynamic_cast<ParameterNode*>(node))
             {
-                sequence->processors.add(new ParameterNodeProcessor(paramNode.getParam));
+                sequence->processors.add(new ParameterNodeProcessor(paramNode->parameter));
             }
             else jassertfalse;
 
@@ -160,7 +155,7 @@ struct  InternalNodeGraph::GraphRenderSequence
         return result;
     }
 
-    std::unordered_map<NodeID, int> nodeIDtoIndex;
+    std::unordered_map<juce::uint32, int> nodeIDtoIndex;
 
         InternalNodeGraph& graph;
     const juce::Array<Node*> orderedNodes;
@@ -172,7 +167,7 @@ struct  InternalNodeGraph::GraphRenderSequence
 
 
 
-InternalNodeGraph::InternalNodeGraph(ByteBeatNodeGraphAudioProcessor* p) : audioProcessor(p)
+InternalNodeGraph::InternalNodeGraph(ByteBeatNodeGraphAudioProcessor* p, ParameterManager& paramManager) : audioProcessor(p), parameterManager(paramManager)
 {
 
 }
@@ -268,9 +263,10 @@ InternalNodeGraph::Node::Ptr InternalNodeGraph::addNode(NodeType nodeType, NodeI
 		n = new OutputNode(nodeID);
 		break;
 	case NodeType::Parameter:
-		n = new ParameterNode(nodeID);
+		n = new ParameterNode(nodeID, parameterManager);
 		break;
-	default: break;
+	case NodeType::Void: break;
+	//default: break;
 	}
 
 

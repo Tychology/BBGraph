@@ -24,7 +24,9 @@ ByteBeatNodeGraphAudioProcessor::ByteBeatNodeGraphAudioProcessor()
 #elif
     :
 #endif
-    graph(this), apvts(*this, nullptr, "apvts", createParameters())
+	apvts(*this, nullptr, "apvts", createParameters()),
+	parameterManager(apvts),
+	graph(this, parameterManager)
 {
 
 }
@@ -144,7 +146,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout ByteBeatNodeGraphAudioProces
 
      for (int i = 1; i <= total_num_prams; ++i)
      {
-         params.push_back(std::make_unique<juce::AudioParameterFloat>("Param" + i, "Parameter " + i, defaultRange, 0));
+         params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::String(i), juce::String("Parameter ") += i, defaultRange, 0));
      }
 
      return {params.begin(), params.end()};

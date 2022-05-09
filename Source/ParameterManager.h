@@ -1,0 +1,51 @@
+/*
+  ==============================================================================
+
+    ParameterManager.h
+    Created: 9 May 2022 3:52:44pm
+    Author:  Jonas
+
+  ==============================================================================
+*/
+
+#pragma once
+#include <bitset>
+#include <JuceHeader.h>
+#include "Defines.h"
+
+
+class ParameterManager : public juce::ReferenceCountedObject
+{
+public:
+    ParameterManager (juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
+    {
+        //isParameterConnected.resize(count + 1);
+    }
+
+    juce::AudioParameterFloat& newConnection()
+    {
+
+	    for (int i = 1; i < isParameterConnected.size(); ++i)
+	    {
+            if (!isParameterConnected[i])
+            {
+                if (auto* param = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter(juce::String(i))))
+                {
+					isParameterConnected.set(i);
+                	return *param;
+                }
+            }
+	    }
+        jassertfalse; //No more free parameters to connect
+    }
+
+    void removeConection(juce::AudioParameterFloat& parameter)
+    {
+        isParameterConnected.reset(parameter.getParameterID().getIntValue());
+    }
+
+private:
+    juce::AudioProcessorValueTreeState& apvts;
+    //std::vector<bool> isParameterConnected;
+    std::bitset<total_num_prams + 1> isParameterConnected;
+};

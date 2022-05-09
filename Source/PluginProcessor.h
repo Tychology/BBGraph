@@ -10,7 +10,7 @@
 
 #include <JuceHeader.h>
 #include "InternalNodeGraph.h"
-
+#include "ParameterManager.h"
 
 
 //class InternalNodeGraph;
@@ -60,12 +60,14 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     InternalNodeGraph& getGraph() { return graph; }
+    juce::AudioProcessorValueTreeState& getApvts() {return apvts;}
 
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
 private:
     //==============================================================================
     juce::AudioProcessorValueTreeState apvts;
+    ParameterManager parameterManager;
     InternalNodeGraph graph;
     //std::unique_ptr<InternalNodeGraph> graph;
 
