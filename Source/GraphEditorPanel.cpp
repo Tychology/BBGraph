@@ -12,6 +12,18 @@
 
 #include "PluginProcessor.h"
 
+//https://forum.juce.com/t/why-no-logarithmic-slider/43840
+template<typename type>
+static juce::NormalisableRange<type> logRange (type min, type max)
+{
+    //auto range{ std::log2 (max / min) };
+    return { min, max,
+	    [=](type min, type max, type v) { return std::exp2 (v * std::log2 (max / min)) * min; },
+	    [=](type min, type max, type v) { return std::log2 (v / min) / std::log2 (max / min); },
+	    [](type min, type max, type v) { return  v < min ? min : v > max ? max : v; }
+    };
+}
+
 
 void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
                                    float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider)
@@ -669,7 +681,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 {
 
     ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id, juce::AudioProcessorValueTreeState& apvts, juce::AudioParameterFloat& param) : NodeComponent(p, id),
-	range(param.range)
+	range(param.range), paramName(param.name)
     {
 
 	    addAndMakeVisible(paramSlider);
@@ -691,25 +703,54 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 
         minLabel.onTextChange = [this] ()
         {
-	        auto value = minLabel.getText().getFloatValue();
-            range.start = value; // make threadsafe
-            minLabel.setText(juce::String(value), juce::dontSendNotification);
+	        auto newStart = minLabel.getText().getFloatValue();
+
+            // Clamp the value
+            if (log)
+            {
+                if (newStart < 0.f) newStart = 0.01f;
+                if (newStart >= range.end) newStart = range.end + 0.01f;
+            }
+            else
+            {
+	            if (newStart >= range.end) newStart = range.end - 0.01f;
+            }
+
+
+            range.start = newStart; // make threadsafe?
+            paramSlider.setRange(newStart, range.end);
+            minLabel.setText(juce::String(newStart), juce::dontSendNotification);
+            maxLabel.setText(juce::String(range.end), juce::dontSendNotification);
         };
 
         maxLabel.onTextChange = [this] ()
         {
-	        auto value = maxLabel.getText().getFloatValue();
-            range.end = value; // make threadsafe
-            maxLabel.setText(juce::String(value), juce::dontSendNotification);
+	        auto newEnd = maxLabel.getText().getFloatValue();
+
+            // Clamp the value
+            if (log)
+            {
+                if (newEnd < 0.f) newEnd = 0.01f;
+                if (newEnd <= range.start) range.start = newEnd - 0.01f;
+            }
+            else
+            {
+				if (newEnd <= range.start) newEnd = range.start + 0.01f;
+            }
+
+            range.end = newEnd; // make threadsafe?
+            paramSlider.setRange(range.start, newEnd);
+            minLabel.setText(juce::String(range.start), juce::dontSendNotification);
+            maxLabel.setText(juce::String(newEnd), juce::dontSendNotification);
         };
 
     	minLabel.setText(juce::String(range.start), juce::dontSendNotification);
         maxLabel.setText(juce::String(range.end), juce::dontSendNotification);
 
-        addAndMakeVisible(paramName);
-        paramName.setEditable(false);
-        paramName.setText(param.getName(100), juce::dontSendNotification);
-        paramName.setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(paramNameLabel);
+        paramNameLabel.setEditable(false);
+        paramNameLabel.setText(paramName + " : linear", juce::dontSendNotification);
+        paramNameLabel.setJustificationType(juce::Justification::centred);
 
         setSize(200, 200);
 
@@ -725,14 +766,38 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
     	menu.reset (new juce::PopupMenu);
         menu->addItem (1, "Delete");
         menu->addItem (2, "Disconnect all pins");
+        menu->addSeparator();
+        if (log)
+			menu->addItem(3, "Convert to linear parameter");
+        else
+            menu->addItem(4, "Convert to logarithmic parameter");
 
     	menu->showMenuAsync ({}, juce::ModalCallbackFunction::create
                              ([this] (int r) {
         switch (r)
         {
-            case 1:   graph.removeNode (nodeID); break;
-            case 2:   graph.disconnectNode (nodeID); break;
+        case 1: graph.removeNode(nodeID);
+        	break;
+        case 2: graph.disconnectNode(nodeID);
+	        break;
 
+        case 3:
+	        range = juce::NormalisableRange<float>(range.start, range.end);
+            paramNameLabel.setText(paramName + " : linear", juce::dontSendNotification);
+            log = false;
+	        break;
+
+        case 4:
+	        range = logRange<float>(range.start > 0.f ? range.start : 0.01f, range.end);
+            if (range.start > range.end) range.end += 0.01f;
+
+            paramSlider.setRange(range.start, range.end);
+            minLabel.setText(juce::String(range.start), juce::dontSendNotification);
+            paramNameLabel.setText(paramName + " : logarithmic", juce::dontSendNotification);
+            log = true;
+	        break;
+
+        default: break;
         }
         }));
     }
@@ -743,7 +808,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
         auto bounds = getLocalBounds();
 
         bounds.removeFromTop(pinSize);
-        paramName.setBounds(bounds.removeFromTop(pinSize));
+        paramNameLabel.setBounds(bounds.removeFromTop(pinSize));
         auto lableArea = bounds.removeFromBottom(pinSize * 3);
         lableArea.removeFromBottom(pinSize * 1.5);
         lableArea.reduce(pinSize * 0.5, 0);
@@ -756,11 +821,14 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
         maxLabel.setBounds(lableArea);
     }
 
+    bool log {false};
 
+    juce::NormalisableRange<float>& range;
+    juce::String paramName;
 	juce::Slider paramSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachment;
-    juce::NormalisableRange<float>& range;
-    juce::Label minLabel, maxLabel, paramName;
+
+    juce::Label minLabel, maxLabel, paramNameLabel;
 
    LookAndFeel laf;
 

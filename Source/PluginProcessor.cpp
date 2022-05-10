@@ -142,7 +142,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout ByteBeatNodeGraphAudioProces
      std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     //Implement a range that is switchble between linear and logarithmic
-     juce::NormalisableRange<float> defaultRange{0, 127};
+     juce::NormalisableRange<float> defaultRange{0, 255};
 
      for (int i = 1; i <= total_num_prams; ++i)
      {
