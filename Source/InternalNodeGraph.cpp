@@ -259,19 +259,24 @@ InternalNodeGraph::Node::Ptr InternalNodeGraph::addNode(NodeType nodeType, NodeI
 	case NodeType::Expression:
 		n = new ExpressionNode(nodeID);
 		break;
+
 	case NodeType::Output:
 		n = new OutputNode(nodeID);
 		break;
+
 	case NodeType::Parameter:
-		n = new ParameterNode(nodeID, parameterManager);
+        if (parameterManager.existFreeParams()) //should give feedback to the user if there are no free parameters
+        	n = new ParameterNode(nodeID, parameterManager);
+        else return n;
 		break;
-	case NodeType::Void: break;
+
+	case NodeType::Void: return n;
 	//default: break;
 	}
 
 
     {
-        //const juce::ScopedLock sl ();
+        const juce::ScopedLock sl ();
         nodes.add (n.get());
     }
 
@@ -284,7 +289,7 @@ InternalNodeGraph::Node::Ptr InternalNodeGraph::addNode(NodeType nodeType, NodeI
 
 InternalNodeGraph::Node::Ptr InternalNodeGraph::removeNode(NodeID nodeID)
 {
-	//const ScopedLock sl (getCallbackLock());
+	const juce::ScopedLock sl (audioProcessor->getCallbackLock());
 
     for (int i = nodes.size(); --i >= 0;)
     {

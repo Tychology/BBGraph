@@ -19,7 +19,7 @@ class ParameterManager : public juce::ReferenceCountedObject
 public:
     ParameterManager (juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
     {
-        //isParameterConnected.resize(count + 1);
+        isParameterConnected.set(0); //parameter ids start at 1 so [0] is always set
     }
 
     juce::AudioParameterFloat& newConnection()
@@ -42,6 +42,12 @@ public:
     void removeConection(juce::AudioParameterFloat& parameter)
     {
         isParameterConnected.reset(parameter.getParameterID().getIntValue());
+    }
+
+
+    bool existFreeParams()
+    {
+	    return !isParameterConnected.all();
     }
 
 private:
