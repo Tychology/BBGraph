@@ -11,18 +11,7 @@
 #include "GraphEditorPanel.h"
 
 #include "PluginProcessor.h"
-
-//https://forum.juce.com/t/why-no-logarithmic-slider/43840
-template<typename type>
-static juce::NormalisableRange<type> logRange (type min, type max)
-{
-    //auto range{ std::log2 (max / min) };
-    return { min, max,
-	    [=](type min, type max, type v) { return std::exp2 (v * std::log2 (max / min)) * min; },
-	    [=](type min, type max, type v) { return std::log2 (v / min) / std::log2 (max / min); },
-	    [](type min, type max, type v) { return  v < min ? min : v > max ? max : v; }
-    };
-}
+#include "CustomRange.h"
 
 
 void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
@@ -681,7 +670,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 {
 
     ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id, juce::AudioProcessorValueTreeState& apvts, juce::AudioParameterFloat& param) : NodeComponent(p, id),
-	range(param.range), paramName(param.name)
+	range(param.range), paramName(param.name), param(param)
     {
 
 	    addAndMakeVisible(paramSlider);
@@ -689,6 +678,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
         paramSlider.setNumDecimalPlacesToDisplay(2);
         paramSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, paramSlider.getTextBoxWidth(), paramSlider.getTextBoxHeight());
         paramSlider.setLookAndFeel(&laf);
+        //paramSlider.setNumDecimalPlacesToDisplay(0);
 
         auto paramID = param.getParameterID();
 
@@ -704,43 +694,54 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
         minLabel.onTextChange = [this] ()
         {
 	        auto newStart = minLabel.getText().getFloatValue();
+            auto newEnd = range.end;
 
-            // Clamp the value
             if (log)
             {
-                if (newStart < 0.f) newStart = 0.01f;
-                if (newStart >= range.end) newStart = range.end + 0.01f;
+                if (newStart <= 0.f) newStart = 0.01f;
+                if (newStart >= newEnd) newEnd = newStart + 0.01f;
+
+                range = logRange<float>(newStart, newEnd);
+                paramSlider.setNormalisableRange(logRange<double>(newStart, newEnd));
             }
             else
             {
-	            if (newStart >= range.end) newStart = range.end - 0.01f;
+	            if (newStart >= newEnd) newStart = newEnd - 0.01f;
+
+                range = juce::NormalisableRange<float>(newStart, newEnd, 0);
+                paramSlider.setNormalisableRange(juce::NormalisableRange<double>(newStart, newEnd, 0));
             }
 
+            paramSlider.repaint();
 
-            range.start = newStart; // make threadsafe?
-            paramSlider.setRange(newStart, range.end);
             minLabel.setText(juce::String(newStart), juce::dontSendNotification);
-            maxLabel.setText(juce::String(range.end), juce::dontSendNotification);
+            maxLabel.setText(juce::String(newEnd), juce::dontSendNotification);
         };
 
         maxLabel.onTextChange = [this] ()
         {
+            auto newStart = range.start;
 	        auto newEnd = maxLabel.getText().getFloatValue();
 
-            // Clamp the value
             if (log)
             {
-                if (newEnd < 0.f) newEnd = 0.01f;
-                if (newEnd <= range.start) range.start = newEnd - 0.01f;
+                if (newEnd <= 0.f) newEnd = 0.01f;
+                if (newEnd <= newStart) newEnd = newStart + 0.01f;
+
+                range = logRange<float>(newStart, newEnd);
+                paramSlider.setNormalisableRange(logRange<double>(newStart, newEnd));
             }
             else
             {
-				if (newEnd <= range.start) newEnd = range.start + 0.01f;
+				if (newEnd <= newStart) newEnd = newStart + 0.01f;
+
+            	range = juce::NormalisableRange<float>(newStart, newEnd, 0);
+                paramSlider.setNormalisableRange(juce::NormalisableRange<double>(newStart, newEnd, 0));
             }
 
-            range.end = newEnd; // make threadsafe?
-            paramSlider.setRange(range.start, newEnd);
-            minLabel.setText(juce::String(range.start), juce::dontSendNotification);
+        	paramSlider.repaint();
+
+            minLabel.setText(juce::String(newStart), juce::dontSendNotification);
             maxLabel.setText(juce::String(newEnd), juce::dontSendNotification);
         };
 
@@ -772,6 +773,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
         else
             menu->addItem(4, "Convert to logarithmic parameter");
 
+
     	menu->showMenuAsync ({}, juce::ModalCallbackFunction::create
                              ([this] (int r) {
         switch (r)
@@ -783,7 +785,12 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 
         case 3:
 	        range = juce::NormalisableRange<float>(range.start, range.end);
+
+            paramSlider.setNormalisableRange(juce::NormalisableRange<double>(range.start, range.end));
+            paramSlider.repaint();
+
             paramNameLabel.setText(paramName + " : linear", juce::dontSendNotification);
+
             log = false;
 	        break;
 
@@ -791,9 +798,12 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
 	        range = logRange<float>(range.start > 0.f ? range.start : 0.01f, range.end);
             if (range.start > range.end) range.end += 0.01f;
 
-            paramSlider.setRange(range.start, range.end);
+            paramSlider.setNormalisableRange(logRange<double>(range.start, range.end));
+            paramSlider.repaint();
+
             minLabel.setText(juce::String(range.start), juce::dontSendNotification);
             paramNameLabel.setText(paramName + " : logarithmic", juce::dontSendNotification);
+
             log = true;
 	        break;
 
@@ -824,6 +834,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
     bool log {false};
 
     juce::NormalisableRange<float>& range;
+    juce::AudioParameterFloat& param;
     juce::String paramName;
 	juce::Slider paramSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachment;
