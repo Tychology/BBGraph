@@ -543,8 +543,13 @@ juce::ValueTree InternalNodeGraph::toValueTree() const
 
 		juce::ValueTree n ("node");
 
+        for(auto property : node->properties)
+        {
+	        n.setProperty(property.name, property.value, nullptr);
+        }
 
 		n.setProperty("uid", (int)node->nodeID.uid, nullptr);
+        /*
 		n.setProperty("x", node->properties ["x"], nullptr);
 		n.setProperty("y", node->properties ["y"], nullptr);
 
@@ -561,12 +566,15 @@ juce::ValueTree InternalNodeGraph::toValueTree() const
 		{
 			n.setProperty("type", NodeType::Parameter, nullptr);
 			n.setProperty("parameterID", node->properties["parameterID"], nullptr);
+            n.setProperty("log", node->properties["log"], nullptr);
+            n.setProperty("start", node->properties["start"], nullptr);
+            n.setProperty("end", node->properties["end"], nullptr);
 		}
 		else
 		{
 			jassertfalse;
 			continue;
-		}
+		}*/
 
 		nodesTree.addChild(n, -1, nullptr);
 
@@ -617,6 +625,14 @@ void InternalNodeGraph::restoreFromTree(const juce::ValueTree& graphTree)
 
 			auto node = addNode(type, nodeID);
 
+			for (int i = 0; i < n.getNumProperties(); ++i)
+			{
+                auto propertyName = n.getPropertyName(i);
+
+				node->properties.set(propertyName, n.getProperty(propertyName));
+			}
+
+            /*
 			node->properties.set("x", n.getProperty("x"));
 			node->properties.set("y", n.getProperty("y"));
 
@@ -630,8 +646,12 @@ void InternalNodeGraph::restoreFromTree(const juce::ValueTree& graphTree)
 			case Output: break;
 			case Parameter:
 				node->properties.set("parameterID", n.getProperty("parameterID"));
+                node->properties.set("log", n.getProperty("log"));
+                node->properties.set("start", n.getProperty("start"));
+                node->properties.set("end", n.getProperty("end"));
 				break;
 			}
+			*/
 		}
 	}
 

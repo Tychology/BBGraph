@@ -661,6 +661,7 @@ struct GraphEditorPanel::OutputNodeComponent : NodeComponent
         }));
     }
 
+private:
      juce::DrawablePath outSymbol;
 
 };
@@ -672,6 +673,13 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
     ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id, juce::AudioProcessorValueTreeState& apvts, juce::String paramID) : NodeComponent(p, id),
 	range(dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter(paramID))->range), paramName(apvts.getParameter(paramID)->getName(100))//, parameterID(paramID)
     {
+
+        auto* node = graph.getNodeForId(id);
+        log = node->properties.getWithDefault("log", false);
+        updateStart( node->properties.getWithDefault("start", 0));
+        updateEnd( node->properties.getWithDefault("end", 255));
+
+
 
 	    addAndMakeVisible(paramSlider);
         paramSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
@@ -693,65 +701,26 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
 
         minLabel.onTextChange = [this] ()
         {
-	        auto newStart = minLabel.getText().getFloatValue();
-            auto newEnd = range.end;
-
-            if (log)
-            {
-                if (newStart <= 0.f) newStart = 0.01f;
-                if (newStart >= newEnd) newEnd = newStart + 0.01f;
-
-                range = logRange<float>(newStart, newEnd);
-                paramSlider.setNormalisableRange(logRange<double>(newStart, newEnd));
-            }
-            else
-            {
-	            if (newStart >= newEnd) newStart = newEnd - 0.01f;
-
-                range = juce::NormalisableRange<float>(newStart, newEnd, 0);
-                paramSlider.setNormalisableRange(juce::NormalisableRange<double>(newStart, newEnd, 0));
-            }
-
-            paramSlider.repaint();
-
-            minLabel.setText(juce::String(newStart), juce::dontSendNotification);
-            maxLabel.setText(juce::String(newEnd), juce::dontSendNotification);
+	        updateStart( minLabel.getText().getFloatValue() );
         };
 
         maxLabel.onTextChange = [this] ()
         {
-            auto newStart = range.start;
-	        auto newEnd = maxLabel.getText().getFloatValue();
-
-            if (log)
-            {
-                if (newEnd <= 0.f) newEnd = 0.01f;
-                if (newEnd <= newStart) newEnd = newStart + 0.01f;
-
-                range = logRange<float>(newStart, newEnd);
-                paramSlider.setNormalisableRange(logRange<double>(newStart, newEnd));
-            }
-            else
-            {
-				if (newEnd <= newStart) newEnd = newStart + 0.01f;
-
-            	range = juce::NormalisableRange<float>(newStart, newEnd, 0);
-                paramSlider.setNormalisableRange(juce::NormalisableRange<double>(newStart, newEnd, 0));
-            }
-
-        	paramSlider.repaint();
-
-            minLabel.setText(juce::String(newStart), juce::dontSendNotification);
-            maxLabel.setText(juce::String(newEnd), juce::dontSendNotification);
+            updateEnd(maxLabel.getText().getFloatValue());
         };
 
-    	minLabel.setText(juce::String(range.start), juce::dontSendNotification);
-        maxLabel.setText(juce::String(range.end), juce::dontSendNotification);
+    	minLabel.setText(juce::String(range.start), juce::sendNotification);
+        maxLabel.setText(juce::String(range.end), juce::sendNotification);
 
         addAndMakeVisible(paramNameLabel);
         paramNameLabel.setEditable(false);
-        paramNameLabel.setText(paramName + " : linear", juce::dontSendNotification);
-        paramNameLabel.setJustificationType(juce::Justification::centred);
+    	paramNameLabel.setJustificationType(juce::Justification::centred);
+
+        if (log)
+    		makeLogarithmic();
+        else
+			makeLinear();
+
 
         setSize(200, 200);
 
@@ -761,7 +730,6 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
     {
 	    paramSlider.setLookAndFeel(nullptr);
     }
-
 
 
 
@@ -781,36 +749,11 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
                              ([this] (int r) {
         switch (r)
         {
-        case 1: graph.removeNode(nodeID);
-        	break;
-        case 2: graph.disconnectNode(nodeID);
-	        break;
-
-        case 3:
-	        range = juce::NormalisableRange<float>(range.start, range.end);
-
-            paramSlider.setNormalisableRange(juce::NormalisableRange<double>(range.start, range.end));
-            paramSlider.repaint();
-
-            paramNameLabel.setText(paramName + " : linear", juce::dontSendNotification);
-
-            log = false;
-	        break;
-
-        case 4:
-	        range = logRange<float>(range.start > 0.f ? range.start : 0.01f, range.end);
-            if (range.start > range.end) range.end += 0.01f;
-
-            paramSlider.setNormalisableRange(logRange<double>(range.start, range.end));
-            paramSlider.repaint();
-
-            minLabel.setText(juce::String(range.start), juce::dontSendNotification);
-            paramNameLabel.setText(paramName + " : logarithmic", juce::dontSendNotification);
-
-            log = true;
-	        break;
-
-        default: break;
+        case 1: graph.removeNode(nodeID);       break;
+        case 2: graph.disconnectNode(nodeID);   break;
+        case 3: makeLinear();                   break;
+        case 4: makeLogarithmic();              break;
+        default:                                break;
         }
         }));
     }
@@ -834,7 +777,99 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
         maxLabel.setBounds(lableArea);
     }
 
-    bool log {false};
+private:
+    void updateStart(float newStart)
+    {
+	    auto newEnd = range.end;
+
+	    if (log)
+	    {
+		    if (newStart <= 0.f) newStart = 0.01f;
+		    if (newStart >= newEnd) newEnd = newStart + 0.01f;
+
+		    range = logRange<float>(newStart, newEnd);
+		    paramSlider.setNormalisableRange(logRange<double>(newStart, newEnd));
+	    }
+	    else
+	    {
+		    if (newStart >= newEnd) newStart = newEnd - 0.01f;
+
+		    range = juce::NormalisableRange<float>(newStart, newEnd, 0);
+		    paramSlider.setNormalisableRange(juce::NormalisableRange<double>(newStart, newEnd, 0));
+	    }
+
+	    auto* node = graph.getNodeForId(nodeID);
+	    node->properties.set("start", newStart);
+	    node->properties.set("end", newEnd);
+
+	    minLabel.setText(juce::String(newStart), juce::dontSendNotification);
+	    maxLabel.setText(juce::String(newEnd), juce::dontSendNotification);
+
+	    paramSlider.repaint();
+    }
+
+    void updateEnd(float newEnd)
+    {
+	    auto newStart = range.start;
+
+
+	    if (log)
+	    {
+		    if (newEnd <= 0.f) newEnd = 0.01f;
+		    if (newEnd <= newStart) newEnd = newStart + 0.01f;
+
+		    range = logRange<float>(newStart, newEnd);
+		    paramSlider.setNormalisableRange(logRange<double>(newStart, newEnd));
+	    }
+	    else
+	    {
+		    if (newEnd <= newStart) newEnd = newStart + 0.01f;
+
+		    range = juce::NormalisableRange<float>(newStart, newEnd, 0);
+		    paramSlider.setNormalisableRange(juce::NormalisableRange<double>(newStart, newEnd, 0));
+	    }
+
+	    auto* node = graph.getNodeForId(nodeID);
+	    node->properties.set("start", newStart);
+	    node->properties.set("end", newEnd);
+
+	    minLabel.setText(juce::String(newStart), juce::dontSendNotification);
+	    maxLabel.setText(juce::String(newEnd), juce::dontSendNotification);
+
+	    paramSlider.repaint();
+    }
+
+    void makeLinear()
+    {
+	    range = juce::NormalisableRange<float>(range.start, range.end);
+
+            paramSlider.setNormalisableRange(juce::NormalisableRange<double>(range.start, range.end));
+            paramSlider.repaint();
+
+            paramNameLabel.setText(paramName + " : linear", juce::dontSendNotification);
+
+            log = false;
+            graph.getNodeForId(nodeID)->properties.set("log", false);
+    }
+
+    void makeLogarithmic()
+    {
+	     range = logRange<float>(range.start > 0.f ? range.start : 0.01f, range.end);
+            if (range.start > range.end) range.end += 0.01f;
+
+            paramSlider.setNormalisableRange(logRange<double>(range.start, range.end));
+            paramSlider.repaint();
+
+            minLabel.setText(juce::String(range.start), juce::dontSendNotification);
+            paramNameLabel.setText(paramName + " : logarithmic", juce::dontSendNotification);
+
+            log = true;
+            graph.getNodeForId(nodeID)->properties.set("log", true);
+    }
+
+
+
+    bool log;
 
     juce::NormalisableRange<float>& range;
     //juce::AudioParameterFloat& param;
@@ -918,6 +953,23 @@ void GraphEditorPanel::updateComponents()
         {
             NodeComponent* comp;
 
+            auto type = static_cast<NodeType>(static_cast<int>(f->properties["type"]));
+
+            switch (type)
+            {
+            case Void: continue;
+            case Expression:
+                comp = nodes.add(new ExpressionNodeComponent(*this, f->nodeID));
+                break;
+            case Output:
+                comp = nodes.add(new OutputNodeComponent(*this, f->nodeID));
+                break;
+            case Parameter:
+                 comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID, apvts, f->properties["parameterID"]));
+                break;
+            }
+
+            /*
 	        if (auto* expf = dynamic_cast<InternalNodeGraph::ExpressionNode*>(f))
 	        {
 		        comp = nodes.add(new ExpressionNodeComponent(*this, f->nodeID));
@@ -934,7 +986,7 @@ void GraphEditorPanel::updateComponents()
 	        {
 		        jassertfalse;
                 continue;
-	        }
+	        }*/
 
             addAndMakeVisible(comp);
         	comp->update();
