@@ -203,21 +203,21 @@ public:
     class ParameterNode : public Node
     {
     public:
-        ParameterNode(NodeID n, ParameterManager& paramManager) : Node(n, 0, 1), parameterID(paramManager.newConnection()), parameterManager(paramManager)
+        ParameterNode(NodeID n, ParameterManager& paramManager) : Node(n, 0, 1), parameterManager(paramManager)
         {
-  
+            properties.set("parameterID", paramManager.connectToID(properties["parameterID"]) );
         }
 
-        ~ParameterNode()
+        ~ParameterNode() override
         {
-            parameterManager.removeConnection(parameterID);
+            parameterManager.removeConnection(properties["parameterID"]);
         }
 
 
 	    //juce::AudioProcessorValueTreeState::Parameter* parameter;
 
         //juce::AudioParameterFloat& parameter;
-        juce::String parameterID;
+        //juce::String parameterID;
 
     private:
         ParameterManager& parameterManager;
@@ -283,6 +283,11 @@ public:
     bool removeIllegalConnections();
 
     float getNextSample();
+
+    juce::ValueTree toValueTree() const;
+
+    void restoreFromTree(const juce::ValueTree& graphTree);
+
 private:
     ByteBeatNodeGraphAudioProcessor* audioProcessor;
     ParameterManager& parameterManager;

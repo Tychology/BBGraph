@@ -129,12 +129,30 @@ void ByteBeatNodeGraphAudioProcessor::getStateInformation (juce::MemoryBlock& de
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+
+	juce::MemoryOutputStream mos(destData, true);
+    juce::ValueTree pluginState ("PluginState");
+
+    pluginState.addChild(apvts.state, 0, nullptr);
+    pluginState.addChild(graph.toValueTree(), 1, nullptr);
+
+    pluginState.writeToStream(mos);
+    //apvts.state.writeToStream(mos);
 }
 
 void ByteBeatNodeGraphAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+
+	auto tree = juce::ValueTree::readFromData(data, sizeInBytes);
+
+    if( tree.isValid() )
+    {
+        apvts.replaceState(tree.getChildWithName("apvts"));
+
+        graph.restoreFromTree(tree.getChildWithName("graph"));
+    }
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout ByteBeatNodeGraphAudioProcessor::createParameters()

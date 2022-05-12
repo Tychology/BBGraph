@@ -28,7 +28,7 @@ struct  InternalNodeGraph::GraphRenderSequence
     }
 
 
-    NodeProcessorSequence* createNodeProcessorSequence()
+    NodeProcessorSequence* createNodeProcessorSequence(juce::AudioProcessorValueTreeState& apvts)
     {
 	    auto sequence = new NodeProcessorSequence();
 
@@ -62,7 +62,7 @@ struct  InternalNodeGraph::GraphRenderSequence
             }
             else if (auto paramNode = dynamic_cast<ParameterNode*>(node))
             {
-                sequence->processors.add(new ParameterNodeProcessor(paramNode->parameter));
+                sequence->processors.add(new ParameterNodeProcessor( *dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter(paramNode->properties["parameterID"].toString()))));
             }
             else jassertfalse;
 
@@ -530,6 +530,132 @@ float InternalNodeGraph::getNextSample()
 
     return 0.f;
 }
+
+juce::ValueTree InternalNodeGraph::toValueTree() const
+{
+	juce::ValueTree graphTree("graph");
+	juce::ValueTree nodesTree("nodes");
+	juce::ValueTree connectionsTree("connections");
+
+
+	for (auto* node : getNodes())
+	{
+
+		juce::ValueTree n ("node");
+
+
+		n.setProperty("uid", (int)node->nodeID.uid, nullptr);
+		n.setProperty("x", node->properties ["x"], nullptr);
+		n.setProperty("y", node->properties ["y"], nullptr);
+
+		if (auto* expNode = dynamic_cast<InternalNodeGraph::ExpressionNode*>(node))
+		{
+			n.setProperty("type", NodeType::Expression, nullptr);
+			n.setProperty("expression", node->properties.getWithDefault("expression", "" ), nullptr);
+		}
+		else if (auto* outNode = dynamic_cast<InternalNodeGraph::OutputNode*>(node))
+		{
+			n.setProperty("type", NodeType::Output, nullptr);
+		}
+		else if (auto* paramNode = dynamic_cast<InternalNodeGraph::ParameterNode*>(node))
+		{
+			n.setProperty("type", NodeType::Parameter, nullptr);
+			n.setProperty("parameterID", node->properties["parameterID"], nullptr);
+		}
+		else
+		{
+			jassertfalse;
+			continue;
+		}
+
+		nodesTree.addChild(n, -1, nullptr);
+
+	}
+
+
+	for (auto& connection : getConnections())
+	{
+		juce::ValueTree c("connection");
+
+		c.setProperty("srcID", juce::var((int) connection.source.nodeID.uid), nullptr);
+		c.setProperty("srcChannel", juce::var(connection.source.channelIndex), nullptr);
+		c.setProperty("destID", juce::var((int) connection.destination.nodeID.uid), nullptr);
+		c.setProperty("destChannel", juce::var(connection.destination.channelIndex), nullptr);
+
+		connectionsTree.addChild(c, -1, nullptr);
+	}
+
+
+
+	graphTree.addChild(nodesTree, 0, nullptr);
+	graphTree.addChild(connectionsTree, 1, nullptr);
+
+	return graphTree;
+}
+
+
+void InternalNodeGraph::restoreFromTree(const juce::ValueTree& graphTree)
+{
+	clear();
+
+	juce::ValueTree nodesTree = graphTree.getChildWithName("nodes");
+	juce::ValueTree connectionsTree = graphTree.getChildWithName("connections");
+
+
+	if (nodesTree.isValid())
+	{
+		auto numNodes = nodesTree.getNumChildren();
+
+		for (int i = 0; i < numNodes; ++i)
+		{
+			juce::ValueTree n = nodesTree.getChild(i);
+
+			auto type = static_cast<NodeType>(static_cast<int>(n.getProperty("type")));
+			if (type == NodeType::Void) break;
+
+			auto nodeID = NodeID(static_cast<int>(n.getProperty("uid")));
+
+			auto node = addNode(type, nodeID);
+
+			node->properties.set("x", n.getProperty("x"));
+			node->properties.set("y", n.getProperty("y"));
+
+
+			switch (type)
+			{
+			case Void: break;
+			case Expression:
+				node->properties.set("expression", n.getProperty("expression"));
+				break;
+			case Output: break;
+			case Parameter:
+				node->properties.set("parameterID", n.getProperty("parameterID"));
+				break;
+			}
+		}
+	}
+
+
+	if (connectionsTree.isValid())
+	{
+		auto numConnections = connectionsTree.getNumChildren();
+
+		for (int i = 0; i < numConnections; ++i)
+		{
+			auto c = connectionsTree.getChild(i);
+
+			addConnection({
+				{NodeID((int)c.getProperty("srcID")), c.getProperty("srcChannel")},
+				{NodeID((int)c.getProperty("destID")), c.getProperty("destChannel")}
+			});
+		}
+	}
+
+
+	removeIllegalConnections();
+	topologyChanged();
+}
+
 
 //IMPLEMENT
   bool InternalNodeGraph::loopCheck(Node* src, Node* dest) const noexcept

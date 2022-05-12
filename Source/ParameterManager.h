@@ -14,7 +14,7 @@
 #include "Defines.h"
 
 
-class ParameterManager : public juce::ReferenceCountedObject
+class ParameterManager //: public juce::ReferenceCountedObject
 {
 public:
     ParameterManager (juce::AudioProcessorValueTreeState& apvts) : apvts(apvts)
@@ -46,11 +46,22 @@ public:
             if (!isParameterConnected[i])
             {
 					isParameterConnected.set(i);
-                	return {"i"};
-					juce::AudioParameterFloat
+                	return juce::String(i);
             }
 	    }
         jassertfalse; //No more free parameters to connect
+    }
+
+    juce::String connectToID (juce::String parameterID)
+    {
+        auto i = parameterID.getIntValue();
+        if(i > 0 && !isParameterConnected[i])
+        {
+	        isParameterConnected.set(i);
+            return parameterID;
+        }
+
+    	return newConnection();
     }
 
     void removeConection(juce::AudioParameterFloat& parameter)

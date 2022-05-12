@@ -536,7 +536,7 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
         textBox.setFont(font);
 
         auto* node = graph.getNodeForId(nodeID);
-        textBox.setText(node->properties.getWithDefault("Expression", ""));
+        textBox.setText(node->properties.getWithDefault("expression", ""));
 
 
         textBox.onReturnKey = [this] ()
@@ -549,7 +549,7 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
             if(auto* node = static_cast<InternalNodeGraph::ExpressionNode*>(graph.getNodeForId(nodeID)))
             {
 	            auto expressionString = textBox.getText();
-				node->properties.set("Expression", expressionString );
+				node->properties.set("expression", expressionString );
 
 				//node.parse(expressionString);
             }
@@ -670,7 +670,7 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
 {
 
     ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id, juce::AudioProcessorValueTreeState& apvts, juce::String paramID) : NodeComponent(p, id),
-	range(apvts.getParameterRange(paramID))//, parameterID(paramID)
+	range(dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter(paramID))->range), paramName(apvts.getParameter(paramID)->getName(100))//, parameterID(paramID)
     {
 
 	    addAndMakeVisible(paramSlider);
@@ -761,6 +761,9 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
     {
 	    paramSlider.setLookAndFeel(nullptr);
     }
+
+
+
 
    void showPopupMenu() override
     {
@@ -925,7 +928,7 @@ void GraphEditorPanel::updateComponents()
 	        }
 	        else if (auto* paramf = dynamic_cast<InternalNodeGraph::ParameterNode*>(f))
 	        {
-		        comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID, apvts, paramf->parameterID));
+		        comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID, apvts, paramf->properties["parameterID"]));
 	        }
 	        else
 	        {
