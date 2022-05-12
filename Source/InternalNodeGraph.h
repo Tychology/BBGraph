@@ -148,6 +148,7 @@ public:
 
         ExpressionNode(NodeID n) : Node(n, expr_node_num_ins, 1)
         {
+            properties.set("type", NodeType::Expression);
         }
 
         void processNextValue() override
@@ -181,7 +182,10 @@ public:
     class OutputNode : public Node
     {
     public:
-        OutputNode(NodeID n) : Node(n, 1, 0) {}
+        OutputNode(NodeID n) : Node(n, 1, 0)
+        {
+	         properties.set("type", NodeType::Output);
+        }
 
 	    float getNextSample()
         {
@@ -205,6 +209,7 @@ public:
     public:
         ParameterNode(NodeID n, ParameterManager& paramManager) : Node(n, 0, 1), parameterManager(paramManager)
         {
+            properties.set("type", NodeType::Parameter);
             properties.set("parameterID", paramManager.connectToID(properties["parameterID"]) );
         }
 
