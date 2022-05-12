@@ -203,28 +203,21 @@ public:
     class ParameterNode : public Node
     {
     public:
-        ParameterNode(NodeID n, ParameterManager& paramManager) : Node(n, 0, 1), parameter(paramManager.newConnection()), parameterManager(paramManager)
+        ParameterNode(NodeID n, ParameterManager& paramManager) : Node(n, 0, 1), parameterID(paramManager.newConnection()), parameterManager(paramManager)
         {
-
+  
         }
 
         ~ParameterNode()
         {
-            parameterManager.removeConection(parameter);
+            parameterManager.removeConnection(parameterID);
         }
 
-	    void processNextValue()
-	    {
-            /*if (parameter != nullptr)
-				outValue.set(parameter->get());
-            else outValue.set(0);*/
-
-            outValue.set(parameter.get());
-	    }
 
 	    //juce::AudioProcessorValueTreeState::Parameter* parameter;
 
-        juce::AudioParameterFloat& parameter;
+        //juce::AudioParameterFloat& parameter;
+        juce::String parameterID;
 
     private:
         ParameterManager& parameterManager;

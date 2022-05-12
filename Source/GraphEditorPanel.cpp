@@ -666,11 +666,11 @@ struct GraphEditorPanel::OutputNodeComponent : NodeComponent
 };
 
 
-struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
+struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
 {
 
-    ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id, juce::AudioProcessorValueTreeState& apvts, juce::AudioParameterFloat& param) : NodeComponent(p, id),
-	range(param.range), paramName(param.name), param(param)
+    ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id, juce::AudioProcessorValueTreeState& apvts, juce::String paramID) : NodeComponent(p, id),
+	range(apvts.getParameterRange(paramID))//, parameterID(paramID)
     {
 
 	    addAndMakeVisible(paramSlider);
@@ -680,7 +680,7 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
         paramSlider.setLookAndFeel(&laf);
         //paramSlider.setNumDecimalPlacesToDisplay(0);
 
-        auto paramID = param.getParameterID();
+        //auto paramID = param.getParameterID();
 
         sliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             apvts, paramID, paramSlider);
@@ -834,7 +834,8 @@ struct GraphEditorPanel::ParameterNodeComponent :NodeComponent
     bool log {false};
 
     juce::NormalisableRange<float>& range;
-    juce::AudioParameterFloat& param;
+    //juce::AudioParameterFloat& param;
+    //juce::String parameterID;
     juce::String paramName;
 	juce::Slider paramSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sliderAttachment;
@@ -924,7 +925,7 @@ void GraphEditorPanel::updateComponents()
 	        }
 	        else if (auto* paramf = dynamic_cast<InternalNodeGraph::ParameterNode*>(f))
 	        {
-		        comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID, apvts, paramf->parameter));
+		        comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID, apvts, paramf->parameterID));
 	        }
 	        else
 	        {

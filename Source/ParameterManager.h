@@ -21,7 +21,7 @@ public:
     {
         isParameterConnected.set(0); //parameter ids start at 1 so [0] is always set
     }
-
+    /*
     juce::AudioParameterFloat& newConnection()
     {
 
@@ -37,11 +37,30 @@ public:
             }
 	    }
         jassertfalse; //No more free parameters to connect
+    }*/
+
+    juce::String newConnection()
+    {
+	    for (int i = 1; i < isParameterConnected.size(); ++i)
+	    {
+            if (!isParameterConnected[i])
+            {
+					isParameterConnected.set(i);
+                	return {"i"};
+					juce::AudioParameterFloat
+            }
+	    }
+        jassertfalse; //No more free parameters to connect
     }
 
     void removeConection(juce::AudioParameterFloat& parameter)
     {
         isParameterConnected.reset(parameter.getParameterID().getIntValue());
+    }
+
+    void removeConnection(juce::String parameterID)
+    {
+	    isParameterConnected.reset(parameterID.getIntValue());
     }
 
 
