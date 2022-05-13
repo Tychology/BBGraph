@@ -670,15 +670,20 @@ private:
 struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
 {
 
-    ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id, juce::AudioProcessorValueTreeState& apvts, juce::String paramID) : NodeComponent(p, id),
+    ParameterNodeComponent(GraphEditorPanel& p, InternalNodeGraph::NodeID id, juce::AudioProcessorValueTreeState& apvts, juce::StringRef paramID) : NodeComponent(p, id),
 	range(dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter(paramID))->range), paramName(apvts.getParameter(paramID)->getName(100))//, parameterID(paramID)
     {
 
-        auto* node = graph.getNodeForId(id);
-        log = node->properties.getWithDefault("log", false);
-        updateStart( node->properties.getWithDefault("start", 0));
-        updateEnd( node->properties.getWithDefault("end", 255));
+        auto* node = graph.getNodeForId(nodeID);
 
+        log = node->properties.getWithDefault("log", false);
+        range.start = node->properties.getWithDefault("start", 0.0);
+        range.end = node->properties.getWithDefault("end", 255.0);
+
+        if (log)
+    		makeLogarithmic();
+        else
+			makeLinear();
 
 
 	    addAndMakeVisible(paramSlider);
@@ -686,9 +691,8 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
         paramSlider.setNumDecimalPlacesToDisplay(2);
         paramSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, paramSlider.getTextBoxWidth(), paramSlider.getTextBoxHeight());
         paramSlider.setLookAndFeel(&laf);
-        //paramSlider.setNumDecimalPlacesToDisplay(0);
+        //paramSlider.setNumDecimalPlacesToDisplay(1);
 
-        //auto paramID = param.getParameterID();
 
         sliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
             apvts, paramID, paramSlider);
@@ -715,11 +719,7 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
         addAndMakeVisible(paramNameLabel);
         paramNameLabel.setEditable(false);
     	paramNameLabel.setJustificationType(juce::Justification::centred);
-
-        if (log)
-    		makeLogarithmic();
-        else
-			makeLinear();
+        paramNameLabel.setInterceptsMouseClicks(false, false);
 
 
         setSize(200, 200);
@@ -778,6 +778,8 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
     }
 
 private:
+
+
     void updateStart(float newStart)
     {
 	    auto newEnd = range.end;
@@ -841,30 +843,38 @@ private:
 
     void makeLinear()
     {
-	    range = juce::NormalisableRange<float>(range.start, range.end);
+        auto start = range.start;
+        auto end = range.end;
+        if (start >= end) end = range.start + 0.01f;
 
-            paramSlider.setNormalisableRange(juce::NormalisableRange<double>(range.start, range.end));
-            paramSlider.repaint();
+	    range = juce::NormalisableRange<float>(start, end);
 
-            paramNameLabel.setText(paramName + " : linear", juce::dontSendNotification);
+	    paramSlider.setNormalisableRange(juce::NormalisableRange<double>(start, end));
+	    paramSlider.repaint();
 
-            log = false;
-            graph.getNodeForId(nodeID)->properties.set("log", false);
+	    paramNameLabel.setText(paramName + " : linear", juce::dontSendNotification);
+
+	    log = false;
+	    graph.getNodeForId(nodeID)->properties.set("log", false);
     }
 
     void makeLogarithmic()
     {
-	     range = logRange<float>(range.start > 0.f ? range.start : 0.01f, range.end);
-            if (range.start > range.end) range.end += 0.01f;
+        auto start = range.start;
+        auto end = range.end;
+        if (start <= 0.f) start = 0.01f;
+        if (start >= end) end = range.start + 0.01f;
 
-            paramSlider.setNormalisableRange(logRange<double>(range.start, range.end));
-            paramSlider.repaint();
+	    range = logRange<float>(start, end);
 
-            minLabel.setText(juce::String(range.start), juce::dontSendNotification);
-            paramNameLabel.setText(paramName + " : logarithmic", juce::dontSendNotification);
+	    paramSlider.setNormalisableRange(logRange<double>(start, end));
+	    paramSlider.repaint();
 
-            log = true;
-            graph.getNodeForId(nodeID)->properties.set("log", true);
+	    minLabel.setText(juce::String(range.start), juce::dontSendNotification);
+	    paramNameLabel.setText(paramName + " : logarithmic", juce::dontSendNotification);
+
+	    log = true;
+	    graph.getNodeForId(nodeID)->properties.set("log", true);
     }
 
 
@@ -965,7 +975,7 @@ void GraphEditorPanel::updateComponents()
                 comp = nodes.add(new OutputNodeComponent(*this, f->nodeID));
                 break;
             case Parameter:
-                 comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID, apvts, f->properties["parameterID"]));
+                 comp = nodes.add(new ParameterNodeComponent(*this, f->nodeID, apvts, f->properties["parameterID"].toString()));
                 break;
             }
 
