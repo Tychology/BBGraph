@@ -8,7 +8,8 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "InternalNodeGraph.h"
+#include "GraphRenderSequence.h"
+
 
 //==============================================================================
 ByteBeatNodeGraphAudioProcessor::ByteBeatNodeGraphAudioProcessor()
@@ -26,9 +27,12 @@ ByteBeatNodeGraphAudioProcessor::ByteBeatNodeGraphAudioProcessor()
 #endif
 	apvts(*this, nullptr, "apvts", createParameters()),
 	parameterManager(apvts),
-	graph(this, parameterManager)
+	graph(*this, parameterManager)
 {
+       // graph.addChangeListener(this);
 
+    synth.addSound(new SynthSound());
+    synth.addVoice(new SynthVoice());
 }
 
 ByteBeatNodeGraphAudioProcessor::~ByteBeatNodeGraphAudioProcessor()
@@ -39,8 +43,15 @@ ByteBeatNodeGraphAudioProcessor::~ByteBeatNodeGraphAudioProcessor()
 //==============================================================================
 void ByteBeatNodeGraphAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    synth.setCurrentPlaybackSampleRate(sampleRate);
+
+    /* for (int i = 0; i < synth.getNumVoices(); ++i)
+    {
+        if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+        {
+	        voice->prepareToPlay(sampleRate, samplesPerBlock, getTotalNumOutputChannels());
+        }
+    }*/
 }
 
 void ByteBeatNodeGraphAudioProcessor::releaseResources()
@@ -93,24 +104,21 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
 
 
 
+    synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+
 
     auto* channelZero = buffer.getWritePointer (0);
 
-    auto bufferSize = buffer.getNumSamples();
-
-    for (int i = 0; i < bufferSize; ++i)
-    {
-	    channelZero[i] = graph.getNextSample();
-    }
-
-    for (int channel = 1; channel < totalNumOutputChannels; ++channel)
+    //Currently we juce output the same audio on all
+     for (int channel = 1; channel < totalNumOutputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
 
-        buffer.copyFrom(channel, 0, channelZero, bufferSize);
+        buffer.addFrom(channel, 0, channelZero, buffer.getNumSamples());
 
     }
 }
+
 
 //==============================================================================
 bool ByteBeatNodeGraphAudioProcessor::hasEditor() const
@@ -132,7 +140,7 @@ void ByteBeatNodeGraphAudioProcessor::getStateInformation (juce::MemoryBlock& de
 
 	juce::MemoryOutputStream mos(destData, true);
     juce::ValueTree pluginState ("PluginState");
-
+    
     pluginState.addChild(apvts.state, 0, nullptr);
     pluginState.addChild(graph.toValueTree(), 1, nullptr);
 
@@ -155,6 +163,22 @@ void ByteBeatNodeGraphAudioProcessor::setStateInformation (const void* data, int
     }
 }
 
+void ByteBeatNodeGraphAudioProcessor::setNodeProcessorSequence(GraphRenderSequence& sequence)
+{
+    const juce::ScopedLock sl (getCallbackLock());
+
+	for (int i = 0; i < synth.getNumVoices(); ++i)
+	{
+        auto nodeProcessorSequence = sequence.createNodeProcessorSequence(apvts);
+
+		if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+		{
+            voice->setProcessorSequence(nodeProcessorSequence);
+		}
+	}
+
+}
+
 juce::AudioProcessorValueTreeState::ParameterLayout ByteBeatNodeGraphAudioProcessor::createParameters()
 {
      std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
@@ -169,6 +193,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout ByteBeatNodeGraphAudioProces
 
      return {params.begin(), params.end()};
 }
+
+
+
+
+
+
+
+
+
 
 //==============================================================================
 // This creates new instances of the plugin..

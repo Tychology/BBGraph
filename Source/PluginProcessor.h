@@ -11,6 +11,7 @@
 #include <JuceHeader.h>
 #include "InternalNodeGraph.h"
 #include "ParameterManager.h"
+#include "SynthVoice.h"
 
 
 //class InternalNodeGraph;
@@ -18,7 +19,7 @@
 //==============================================================================
 /**
 */
-class ByteBeatNodeGraphAudioProcessor  : public juce::AudioProcessor
+class ByteBeatNodeGraphAudioProcessor  : public juce::AudioProcessor //, public juce::ChangeListener
 
 {
 public:
@@ -35,6 +36,9 @@ public:
    #endif
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+
+    //void changeListenerCallback (juce::ChangeBroadcaster*) override;
+
 
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
@@ -59,16 +63,22 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    InternalNodeGraph& getGraph() { return graph; }
-    juce::AudioProcessorValueTreeState& getApvts() {return apvts;}
+   /* InternalNodeGraph& getGraph() { return graph; }
+    juce::AudioProcessorValueTreeState& getApvts() {return apvts;}*/
 
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+    void setNodeProcessorSequence(GraphRenderSequence& sequence);
+
+    juce::AudioProcessorValueTreeState apvts;
+    InternalNodeGraph graph;
 
 private:
     //==============================================================================
-    juce::AudioProcessorValueTreeState apvts;
     ParameterManager parameterManager;
-    InternalNodeGraph graph;
+
+    juce::Synthesiser synth;
+
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+
     //std::unique_ptr<InternalNodeGraph> graph;
 
 
