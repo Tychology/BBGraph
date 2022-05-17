@@ -13,17 +13,30 @@
 
 //==============================================================================
 ByteBeatNodeGraphAudioProcessorEditor::ByteBeatNodeGraphAudioProcessorEditor (ByteBeatNodeGraphAudioProcessor& p)
-    : AudioProcessorEditor (&p), graph(p.getGraph()), audioProcessor(p)
+    : AudioProcessorEditor (&p), graph(p.graph), audioProcessor(p)
 {
     addAndMakeVisible(viewport);
-    viewport.setViewedComponent(new GraphEditorPanel(p.getApvts(), p.getGraph()), true);
-    viewport.getViewedComponent()->setSize(1000, 1000);
+    viewport.setViewedComponent(new GraphEditorPanel(p.apvts, graph), true);
+    viewport.getViewedComponent()->setSize(4000, 4000);
 
-    setSize (600, 400);
+    setResizable(true, true);
+
+
+    //setResizeLimits(600, 400, viewport.getViewedComponent()->getWidth(), viewport.getViewedComponent()->getHeight());
+    getConstrainer()->setSizeLimits(600, 400, viewport.getViewedComponent()->getWidth(), viewport.getViewedComponent()->getHeight());
+
+    int width = p.apvts.state.getProperty("windowWidth");
+    int height = p.apvts.state.getProperty("windowHeight");
+
+    //juce::Desktop::getInstance().setGlobalScaleFactor(1.5);
+
+    setBoundsConstrained(juce::Rectangle<int>(getX(), getY(), width, height));
+    //setSize (600, 400);
 }
 
 ByteBeatNodeGraphAudioProcessorEditor::~ByteBeatNodeGraphAudioProcessorEditor()
 {
+
 }
 
 //==============================================================================
@@ -35,5 +48,7 @@ void ByteBeatNodeGraphAudioProcessorEditor::paint (juce::Graphics& g)
 void ByteBeatNodeGraphAudioProcessorEditor::resized()
 {
     viewport.setBounds(getLocalBounds());
+    audioProcessor.apvts.state.setProperty("windowWidth", getWidth(), nullptr);
+    audioProcessor.apvts.state.setProperty("windowHeight", getHeight(), nullptr);
 
 }

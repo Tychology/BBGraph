@@ -140,9 +140,9 @@ void ByteBeatNodeGraphAudioProcessor::getStateInformation (juce::MemoryBlock& de
 
 	juce::MemoryOutputStream mos(destData, true);
     juce::ValueTree pluginState ("PluginState");
-    
-    pluginState.addChild(apvts.state, 0, nullptr);
-    pluginState.addChild(graph.toValueTree(), 1, nullptr);
+
+    pluginState.addChild(apvts.state, -1, nullptr);
+    pluginState.addChild(graph.toValueTree(), -1, nullptr);
 
     pluginState.writeToStream(mos);
     //apvts.state.writeToStream(mos);

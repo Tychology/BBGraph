@@ -10,7 +10,7 @@
 
 #include "GraphEditorPanel.h"
 
-#include "PluginProcessor.h"
+//#include "PluginProcessor.h"
 #include "CustomRange.h"
 
 
