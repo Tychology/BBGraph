@@ -12,25 +12,28 @@
 #include <JuceHeader.h>
 
 #include "ByteCodeProcessor.h"
+#include "Defines.h"
 
-class NodeProcessor : public juce::ReferenceCountedObject
+class NodeProcessor //: public juce::ReferenceCountedObject
 {
 public:
 
-    NodeProcessor()
-    {
+    //float getOutValue() {return outValue;}
 
-    }
-
-
-    float getOutValue() {return outValue;}
-
-    virtual void processNextValue();
+    virtual void processNextValue() {}
 
     std::vector<std::vector<NodeProcessor*>> inputs;
 
-protected:
     float outValue{0.f};
+
+    const bool isOutputNode;
+
+    ~NodeProcessor() = default;
+protected:
+    NodeProcessor(bool isOutputNode ) : isOutputNode(isOutputNode) {}
+
+
+
 
 private:
 
@@ -41,16 +44,15 @@ private:
 class ExpressionNodeProcessor : public NodeProcessor
 {
 public:
-    ExpressionNodeProcessor(ByteCodeProcessor& p) : processor(p)
+    ExpressionNodeProcessor(ByteCodeProcessor& p) : NodeProcessor(false), processor(p)
     {
-
     }
 
      void processNextValue() override
         {
-         const int numInputs = inputs.size();
+         //const int numInputs = inputs.size();
 
-	        for (int i = 0; i < numInputs; ++i)
+	        for (int i = 0; i < expr_node_num_ins; ++i)
 	        {
                 auto& input = inputs[i];
 
@@ -58,20 +60,21 @@ public:
 
                 for (auto inputConnection : input)
                 {
-                    value += inputConnection->getOutValue();
+                    value += inputConnection->outValue;
                 }
 
                 inputValues[i] = value;
             }
 
-             outValue = processor.process(inputValues, 0);
+             //outValue = processor.process(inputValues, 0);
 
         }
+
 
 private:
 
 
-    std::vector<float> inputValues;
+    float inputValues[expr_node_num_ins] {0.f};
 
     ByteCodeProcessor& processor;
 };
@@ -80,7 +83,10 @@ private:
 class OutputNodeProcessor : public NodeProcessor
 {
 public:
-    float getNextSample()
+    OutputNodeProcessor() : NodeProcessor(true) {}
+
+
+    void processnNextValue()
     {
 	    float value = 0;
 
@@ -88,10 +94,10 @@ public:
 
         for (auto inputConnection : input)
         {
-                value += inputConnection->getOutValue();
+                value += inputConnection->outValue;
         }
 
-	    return static_cast<juce::uint8>(value) / 128.f - 1.f ;
+        outValue = static_cast<juce::uint8>(value) / 128.f - 1.f;
     }
 
 
@@ -103,7 +109,7 @@ class ParameterNodeProcessor : public NodeProcessor
 {
 public:
 
-    ParameterNodeProcessor(juce::AudioParameterFloat& param) : parameter(param)
+    ParameterNodeProcessor(juce::AudioParameterFloat& param) : NodeProcessor(false), parameter(param)
     {
 
     }
@@ -123,10 +129,9 @@ class NodeProcessorSequence
 {
 public:
 
-    NodeProcessorSequence()
-    {
+    //Constructs empty NodeProcessorSequence
+    //NodeProcessorSequence() = default;
 
-    }
 
     float getNextSample()
     {
@@ -134,21 +139,16 @@ public:
 
         for (auto p : processors)
         {
+            p->processNextValue();
 
-            if (auto outputNode = dynamic_cast<OutputNodeProcessor*>(p))
-            {
-	            sampleValue += outputNode->getNextSample();
-            }
-            else
-            {
-	            p->processNextValue();
-            }
+            if (p->isOutputNode) sampleValue += p->outValue;
         }
 
         return sampleValue;
     }
 
-    juce::ReferenceCountedArray<NodeProcessor> processors;
+    juce::OwnedArray<NodeProcessor> processors;
+    //juce::ReferenceCountedArray<NodeProcessor> processors;
 
 private:
 
