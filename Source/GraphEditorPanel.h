@@ -13,8 +13,6 @@
 
 #include "InternalNodeGraph.h"
 
-#include "LookAndFeelDemo.h"
-
 
 struct LookAndFeel : juce::LookAndFeel_V4
 {
@@ -46,17 +44,17 @@ public:
 	juce::Point<double> getNodePosition (InternalNodeGraph::NodeID) const;
 
 
-    void paint (juce::Graphics& g) override
+    void paint(juce::Graphics& g) override
     {
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-}
+	    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
+    }
 
-    void mouseDown (const juce::MouseEvent& e) override
+    void mouseDown(const juce::MouseEvent& e) override
     {
-    	unfocusAllComponents();
-    if (e.mods.isPopupMenu())
+	    unfocusAllComponents();
+	    if (e.mods.isPopupMenu())
         showPopupMenu (e.position.toInt());
-}
+	}
 
     void resized() override
     {

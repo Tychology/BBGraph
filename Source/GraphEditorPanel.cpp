@@ -1025,13 +1025,18 @@ void GraphEditorPanel::showPopupMenu(juce::Point<int> position)
 	menu->addItem(NodeType::Expression, "Expression Node");
 	menu->addItem(NodeType::Output, "Output Node");
     menu->addItem(NodeType::Parameter, "Parameter Node");
+    menu->addSeparator();
+    menu->addItem(4, "Clear graph");
 
-
+    
 	menu->showMenuAsync({},
 	                    juce::ModalCallbackFunction::create([this, position](int r)
 	                    {
-		                    if (r > 0)
+		                    if (r > 0 && r <= 3)
 			                    createNewNode(NodeType(r), position);
+                            else if (r == 4)
+                                graph.clear();
+
 	                    }));
 }
 
