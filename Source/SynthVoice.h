@@ -10,6 +10,8 @@
 
 #pragma once
 #include <JuceHeader.h>
+//#include "InternalNodeGraph.h"
+#include "NodeProcessor.h"
 
 
 class SynthVoice : public juce::SynthesiserVoice
@@ -23,7 +25,16 @@ public:
 	void controllerMoved(int controllerNumber, int newControllerValue) override;
 	void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
 
+	void setProcessorSequence(NodeProcessorSequence* sequence)
+	{
+		processorSequence = std::unique_ptr<NodeProcessorSequence>(sequence);
+	}
+
+
 private:
+	std::unique_ptr<NodeProcessorSequence> processorSequence;
+	//InternalNodeGraph
+
 };
 
 
