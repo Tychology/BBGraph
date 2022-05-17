@@ -10,164 +10,15 @@
 
 #include "InternalNodeGraph.h"
 #include "PluginProcessor.h"
-#include "NodeProcessor.h"
-
-
-struct  InternalNodeGraph::GraphRenderSequence
-{
-
-    GraphRenderSequence (InternalNodeGraph& g) : graph(g), orderedNodes(createOrderedNodeList(graph)), numNodes(orderedNodes.size())
-    {
-        for (int i = 0; i < numNodes; ++i)
-        {
-            nodeIDtoIndex.insert({orderedNodes[i]->nodeID.uid, i});
-        }
-
-
-
-    }
-
-
-    NodeProcessorSequence* createNodeProcessorSequence(juce::AudioProcessorValueTreeState& apvts)
-    {
-	    auto sequence = new NodeProcessorSequence();
-
-        for (int i = 0; i < orderedNodes.size(); ++i)
-        {
-
-
-            auto node = orderedNodes[i];
-	        if (auto exprNode = dynamic_cast<ExpressionNode*>(node))
-	        {
-                auto processor = new ExpressionNodeProcessor(*exprNode->processor);
-
-                for (auto c : node->inputs)
-                {
-
-                    processor->inputs[c.thisChannel].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID.uid]].get());
-                }
-
-		        sequence->processors.add(processor);
-	        }
-            else if (auto outputNode = dynamic_cast<OutputNode*>(node))
-            {
-
-                auto processor = new OutputNodeProcessor();
-
-                for (auto c : node->inputs)
-                {
-                	processor->inputs[c.thisChannel].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID.uid]].get());
-                }
-	            sequence->processors.add(processor);
-            }
-            else if (auto paramNode = dynamic_cast<ParameterNode*>(node))
-            {
-                sequence->processors.add(new ParameterNodeProcessor( *dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter(paramNode->properties["parameterID"].toString()))));
-            }
-            else jassertfalse;
-
-        }
-
-
-        return sequence;
-    }
-
-
-
-
-    /*
-    float getNextSample()
-    {
-        float sampleValue = 0.f;
-
-        for (auto node : orderedNodes)
-        {
-            jassert(node != nullptr);
-
-            if (auto outputNode = dynamic_cast<OutputNode*>(node))
-            {
-	            sampleValue += outputNode->getNextSample();
-            }
-            else
-            {
-	            node->processNextValue();
-            }
-        }
-
-        return sampleValue;
-    }*/
-
-
-
-    private:
-
-
-
-
-      static void getAllParentsOfNode (const Node* child,
-                                     std::unordered_set<Node*>& parents,
-                                     const std::unordered_map<Node*, std::unordered_set<Node*>>& otherParents)
-    {
-        for (auto&& i : child->inputs)
-        {
-            auto* parentNode = i.otherNode;
-
-            if (parentNode == child)
-                continue;
-
-            if (parents.insert (parentNode).second)
-            {
-                auto parentParents = otherParents.find (parentNode);
-
-                if (parentParents != otherParents.end())
-                {
-                    parents.insert (parentParents->second.begin(), parentParents->second.end());
-                    continue;
-                }
-
-                getAllParentsOfNode (i.otherNode, parents, otherParents);
-            }
-        }
-    }
-
-    static juce::Array<Node*> createOrderedNodeList (const InternalNodeGraph& graph)
-    {
-	    juce::Array<Node*> result;
-
-        std::unordered_map<Node*, std::unordered_set<Node*>> nodeParents;
-
-        for (auto* node : graph.getNodes())
-        {
-            int insertionIndex = 0;
-
-            for (; insertionIndex < result.size(); ++insertionIndex)
-            {
-                auto& parents = nodeParents[result.getUnchecked (insertionIndex)];
-
-                if (parents.find (node) != parents.end())
-                    break;
-            }
-
-            result.insert (insertionIndex, node);
-            getAllParentsOfNode (node, nodeParents[node], nodeParents);
-        }
-
-        return result;
-    }
-
-    std::unordered_map<juce::uint32, int> nodeIDtoIndex;
-
-        InternalNodeGraph& graph;
-    const juce::Array<Node*> orderedNodes;
-    const int numNodes;
-};
+#include "GraphRenderSequence.h"
 
 
 
 
 
 
-InternalNodeGraph::InternalNodeGraph(ByteBeatNodeGraphAudioProcessor* p, ParameterManager& paramManager) : audioProcessor(p), parameterManager(paramManager)
+
+InternalNodeGraph::InternalNodeGraph(ByteBeatNodeGraphAudioProcessor& p, ParameterManager& paramManager) : audioProcessor(p), parameterManager(paramManager)
 {
 
 }
@@ -216,7 +67,7 @@ bool InternalNodeGraph::Connection::operator< (const Connection& other) const no
 
 void InternalNodeGraph::clear()
 {
-     const juce::ScopedLock sl (audioProcessor->getCallbackLock());
+     const juce::ScopedLock sl (audioProcessor.getCallbackLock());
 
     if (nodes.isEmpty())
         return;
@@ -289,7 +140,7 @@ InternalNodeGraph::Node::Ptr InternalNodeGraph::addNode(NodeType nodeType, NodeI
 
 InternalNodeGraph::Node::Ptr InternalNodeGraph::removeNode(NodeID nodeID)
 {
-	const juce::ScopedLock sl (audioProcessor->getCallbackLock());
+	const juce::ScopedLock sl (audioProcessor.getCallbackLock());
 
     for (int i = nodes.size(); --i >= 0;)
     {
@@ -521,15 +372,7 @@ bool InternalNodeGraph::removeIllegalConnections()
     return anyRemoved;
 }
 
-float InternalNodeGraph::getNextSample()
-{
-    //if (renderSequence != nullptr)
-    //{
-	   // return renderSequence->getNextSample();
-    //}
 
-    return 0.f;
-}
 
 juce::ValueTree InternalNodeGraph::toValueTree() const
 {
@@ -538,12 +381,12 @@ juce::ValueTree InternalNodeGraph::toValueTree() const
 	juce::ValueTree connectionsTree("connections");
 
 
-	for (auto* node : getNodes())
+	for (auto* node : nodes)
 	{
 
 		juce::ValueTree n ("node");
 
-        for(auto property : node->properties)
+        for (auto property : node->properties)
         {
 	        n.setProperty(property.name, property.value, nullptr);
         }
@@ -701,27 +544,26 @@ void InternalNodeGraph::handleAsyncUpdate()
      buildRenderingSequence();
 }
 
-void InternalNodeGraph::clearRenderingSequence()
-{
-    auto oldSequence = std::make_unique< GraphRenderSequence>(*this);
-
-    {
-        const juce::ScopedLock sl (audioProcessor->getCallbackLock());
-        std::swap (renderSequence, oldSequence);
-    }
-}
+//void InternalNodeGraph::clearRenderingSequence()
+//{
+//    auto oldSequence = std::make_unique<GraphRenderSequence>(*this);
+//
+//	const juce::ScopedLock sl (audioProcessor.getCallbackLock());
+//	std::swap (renderSequence, oldSequence);
+//
+//
+//}
 
 void InternalNodeGraph::buildRenderingSequence()
 {
-
     auto newSequence = std::make_unique<GraphRenderSequence>(*this);
-
-    const juce::ScopedLock sl (audioProcessor->getCallbackLock());
-
 
     isPrepared = true;
 
     std::swap(renderSequence, newSequence);
+
+
+    audioProcessor.setNodeProcessorSequence(*renderSequence);
 
 }
 

@@ -14,6 +14,8 @@
 #include "Defines.h"
 #include "ParameterManager.h"
 
+struct GraphRenderSequence;
+
 class ByteBeatNodeGraphAudioProcessor;
 
 enum NodeType
@@ -29,7 +31,7 @@ class InternalNodeGraph : public juce::ChangeBroadcaster,
 {
 public:
     /** Creates an empty graph. */
-	explicit InternalNodeGraph(ByteBeatNodeGraphAudioProcessor* p, ParameterManager& paramManager);
+	explicit InternalNodeGraph(ByteBeatNodeGraphAudioProcessor& p, ParameterManager& paramManager);
 
 
     /** Destructor.
@@ -81,7 +83,7 @@ public:
 
         juce::NamedValueSet properties;
 
-        juce::Atomic<float> outValue;
+        //juce::Atomic<float> outValue;
 
         using Ptr = juce::ReferenceCountedObjectPtr<Node>;
 
@@ -151,21 +153,6 @@ public:
             properties.set("type", NodeType::Expression);
         }
 
-        void processNextValue() override
-        {
-	         for (auto c : inputs)
-            {
-                auto cValue =  c.otherNode->outValue.get();
-	            if (c.otherChannel <= expr_node_num_ins)
-	            {
-		            inputValues[c.otherChannel] += cValue;
-	            }
-
-            }
-
-             outValue.set(processor->process(inputValues, t));
-        }
-
         std::unique_ptr<ByteCodeProcessor> processor;
 
     private:
@@ -185,20 +172,6 @@ public:
         OutputNode(NodeID n) : Node(n, 1, 0)
         {
 	         properties.set("type", NodeType::Output);
-        }
-
-	    float getNextSample()
-        {
-            float value = 0;
-            for (auto c : inputs)
-            {
-                if (c.thisChannel == 0)
-                {
-	                value += c.otherNode->outValue.get();
-                }
-            }
-
-	    	return static_cast<juce::uint8>(value) / 128.f - 1.f ;
         }
 
 
@@ -287,20 +260,19 @@ public:
 
     bool removeIllegalConnections();
 
-    float getNextSample();
 
     juce::ValueTree toValueTree() const;
 
     void restoreFromTree(const juce::ValueTree& graphTree);
 
 private:
-    ByteBeatNodeGraphAudioProcessor* audioProcessor;
+    ByteBeatNodeGraphAudioProcessor& audioProcessor;
     ParameterManager& parameterManager;
     juce::ReferenceCountedArray<Node> nodes;
     NodeID lastNodeID = {};
 
 
-     struct GraphRenderSequence;
+
      std::unique_ptr<GraphRenderSequence> renderSequence;
 
      std::atomic<bool> isPrepared { false };
@@ -311,7 +283,7 @@ private:
     void handleAsyncUpdate() override;
 
 
-        void clearRenderingSequence();
+	//void clearRenderingSequence();
     void buildRenderingSequence();
     bool anyNodesNeedPreparing() const noexcept;
 
