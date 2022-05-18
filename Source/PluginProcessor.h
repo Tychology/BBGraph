@@ -68,14 +68,20 @@ public:
 
     void setNodeProcessorSequence(GraphRenderSequence& sequence);
 
-    juce::AudioProcessorValueTreeState apvts;
-    InternalNodeGraph graph;
+
 
 private:
     //==============================================================================
     ParameterManager parameterManager;
 
+public:
+    juce::AudioProcessorValueTreeState apvts;
+    InternalNodeGraph graph;
+
+private:
     juce::Synthesiser synth;
+
+    juce::AudioPlayHead::CurrentPositionInfo positionInfo;
 
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 

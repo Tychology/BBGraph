@@ -44,7 +44,7 @@ private:
 class ExpressionNodeProcessor : public NodeProcessor
 {
 public:
-    ExpressionNodeProcessor(ByteCodeProcessor& p) : NodeProcessor(false), processor(p)
+    ExpressionNodeProcessor(ByteCodeProcessor& p, CounterValues& cv) : NodeProcessor(false), processor(p), counterValues(cv)
     {
     }
 
@@ -66,7 +66,7 @@ public:
                 inputValues[i] = value;
             }
 
-             //outValue = processor.process(inputValues, 0);
+             outValue = processor.process(inputValues, counterValues);
 
         }
 
@@ -75,6 +75,7 @@ private:
 
 
     float inputValues[expr_node_num_ins] {0.f};
+    CounterValues& counterValues;
 
     ByteCodeProcessor& processor;
 };
@@ -132,6 +133,13 @@ public:
     //Constructs empty NodeProcessorSequence
     //NodeProcessorSequence() = default;
 
+    void setCounters(float sampleRate, float noteFrequency, float beatsPerMinute)
+    {
+        dh = 256.f / sampleRate;
+        dn =  noteFrequency * 256.f / sampleRate;
+        dbpm = beatsPerMinute / 60.f * 256.f / sampleRate;
+    }
+
 
     float getNextSample()
     {
@@ -144,12 +152,27 @@ public:
             if (p->isOutputNode) sampleValue += p->outValue;
         }
 
+
+        ++counterValues.t;
+        counterValues.h += dh;
+        counterValues.n += dn;
+        counterValues.bpm += dbpm;
+
         return sampleValue;
     }
 
     juce::OwnedArray<NodeProcessor> processors;
+     CounterValues counterValues;
     //juce::ReferenceCountedArray<NodeProcessor> processors;
 
 private:
+
+
+
+    float t = 0.f;
+    float dh = 0.f;
+    float dn = 0.f;
+    float dbpm = 0.f;
+
 
 };

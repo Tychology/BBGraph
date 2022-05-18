@@ -18,6 +18,9 @@ bool SynthVoice::canPlaySound(juce::SynthesiserSound*)
 void SynthVoice::startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound* sound,
 	int currentPitchWheelPosition)
 {
+    if (processorSequence == nullptr) return;
+
+
 }
 
 void SynthVoice::stopNote(float velocity, bool allowTailOff)

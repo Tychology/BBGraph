@@ -25,6 +25,8 @@ public:
 	void controllerMoved(int controllerNumber, int newControllerValue) override;
 	void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
 
+
+
 	void setProcessorSequence(NodeProcessorSequence* sequence)
 	{
 		processorSequence = std::unique_ptr<NodeProcessorSequence>(sequence);

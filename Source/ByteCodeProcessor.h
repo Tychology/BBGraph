@@ -11,10 +11,18 @@
 #pragma once
 #include <JuceHeader.h>
 
+struct CounterValues
+{
+	float t = 0.f;
+    float h = 0.f;
+    float n = 0.f;
+    float bpm = 0.f;
+};
+
 class ByteCodeProcessor
 {
 
 public:
 
-    float process(std::vector<float>& inpuValues, float t) {return 0;};
+    float process(float* inpuValues, CounterValues& counterValues ) {return 0;};
 };

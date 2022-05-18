@@ -103,6 +103,11 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
 
 
 
+    auto playHead = getPlayHead();
+
+    if (playHead != nullptr)
+		playHead->getCurrentPosition(positionInfo);
+
 
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 
