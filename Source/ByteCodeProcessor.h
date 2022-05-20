@@ -24,5 +24,12 @@ class ByteCodeProcessor
 
 public:
 
-    float process(float* inpuValues, CounterValues& counterValues ) {return 0;};
+    float process(float* inputValues, CounterValues& counterValues )
+    {
+
+        //DBG(inputValues[0]);
+	    //return (std::sin(  counterValues.n / 256 * juce::MathConstants<float>::twoPi) + 1) * inpuValues[0];
+        return (static_cast<int>(counterValues.n * inputValues[0]) & 255);
+        //return inputValues[0];
+    }
 };

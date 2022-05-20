@@ -17,6 +17,7 @@
 class SynthVoice : public juce::SynthesiserVoice
 {
 public:
+
 	bool canPlaySound(juce::SynthesiserSound*) override;
 	void startNote(int midiNoteNumber, float velocity, juce::SynthesiserSound* sound,
 		int currentPitchWheelPosition) override;
@@ -25,7 +26,41 @@ public:
 	void controllerMoved(int controllerNumber, int newControllerValue) override;
 	void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
 
+	void SynthVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outputChannels)
+	{
+		adsr.setSampleRate(sampleRate);
+		//byte.prepareToPlay(sampleRate);
 
+
+		juce::ADSR::Parameters adsrParams;
+
+		adsrParams.attack = 0.f;
+		adsrParams.decay = 0.f;
+		adsrParams.sustain = 1.f;
+		adsrParams.release = 0.f;
+
+		adsr.setParameters(adsrParams);
+	}
+
+
+	void sync(juce::AudioPlayHead::CurrentPositionInfo& positionInfo)
+	{
+		processorSequence->sync(positionInfo, getSampleRate());
+
+	}
+
+	void setBPM(double bpm)
+	{
+		if (processorSequence == nullptr) return;
+		processorSequence->setBPM(bpm, getSampleRate());
+	}
+
+
+	void setTimes(double timeInSeconds, juce::int64 timeInSamples)
+	{
+		if (processorSequence == nullptr) return;
+		processorSequence->setTimes( timeInSeconds,  timeInSamples, getSampleRate());
+	}
 
 	void setProcessorSequence(NodeProcessorSequence* sequence)
 	{
@@ -34,6 +69,7 @@ public:
 
 
 private:
+	juce::ADSR adsr;
 	std::unique_ptr<NodeProcessorSequence> processorSequence;
 	//InternalNodeGraph
 

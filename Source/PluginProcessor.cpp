@@ -45,13 +45,13 @@ void ByteBeatNodeGraphAudioProcessor::prepareToPlay (double sampleRate, int samp
 {
     synth.setCurrentPlaybackSampleRate(sampleRate);
 
-    /* for (int i = 0; i < synth.getNumVoices(); ++i)
+   for (int i = 0; i < synth.getNumVoices(); ++i)
     {
         if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
         {
 	        voice->prepareToPlay(sampleRate, samplesPerBlock, getTotalNumOutputChannels());
         }
-    }*/
+    }
 }
 
 void ByteBeatNodeGraphAudioProcessor::releaseResources()
@@ -106,7 +106,46 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
     auto playHead = getPlayHead();
 
     if (playHead != nullptr)
+    {
 		playHead->getCurrentPosition(positionInfo);
+
+        if (syncToHost.get())
+        {
+	        beatsPerMinute.set(positionInfo.bpm);
+            sendChangeMessage();
+        }
+
+        for (int i = 0; i < synth.getNumVoices(); ++i)
+		{
+			if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+			{
+				voice->setTimes(positionInfo.timeInSeconds, positionInfo.timeInSamples);
+			}
+		}
+
+    }
+    else
+    {
+	    if (syncToHost.get())
+	    {
+		    beatsPerMinute.set(0);
+            sendChangeMessage();
+	    }
+    }
+
+    auto bpm = beatsPerMinute.get();
+
+    for (int i = 0; i < synth.getNumVoices(); ++i)
+    {
+	    if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+	    {
+		    voice->setBPM(bpm);
+	    }
+    }
+
+
+
+
 
 
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());

@@ -530,12 +530,13 @@ void InternalNodeGraph::topologyChanged()
 {
      sendChangeMessage();
 
-    if (isPrepared)
+    //if (isPrepared)
     {
     	if (juce::MessageManager::getInstance()->isThisTheMessageThread())
 			handleAsyncUpdate();
 		else
-			triggerAsyncUpdate();}
+			triggerAsyncUpdate();
+    }
 
 }
 

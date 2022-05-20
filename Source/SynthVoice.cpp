@@ -20,11 +20,18 @@ void SynthVoice::startNote(int midiNoteNumber, float velocity, juce::Synthesiser
 {
     if (processorSequence == nullptr) return;
 
-
+    processorSequence->startNote(getSampleRate(), juce::MidiMessage::getMidiNoteInHertz(midiNoteNumber));
+     adsr.noteOn();
 }
 
 void SynthVoice::stopNote(float velocity, bool allowTailOff)
 {
+    adsr.noteOff();
+
+    if (!allowTailOff || ! adsr.isActive())
+    {
+	    clearCurrentNote();
+    }
 }
 
 void SynthVoice::pitchWheelMoved(int newPitchWheelValue)
@@ -37,7 +44,9 @@ void SynthVoice::controllerMoved(int controllerNumber, int newControllerValue)
 
 void SynthVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples)
 {
+    if (!isVoiceActive()) return;
     if (processorSequence == nullptr) return;
+
 
     auto* channelZero = outputBuffer.getWritePointer (0);
 
@@ -49,4 +58,10 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int sta
 	    channelZero[i] += processorSequence->getNextSample();
     }
 
+    adsr.applyEnvelopeToBuffer(outputBuffer, 0, outputBuffer.getNumSamples());
+
+	if (!adsr.isActive())
+	{
+		clearCurrentNote();
+	}
 }

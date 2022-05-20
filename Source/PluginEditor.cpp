@@ -13,11 +13,13 @@
 
 //==============================================================================
 ByteBeatNodeGraphAudioProcessorEditor::ByteBeatNodeGraphAudioProcessorEditor (ByteBeatNodeGraphAudioProcessor& p)
-    : AudioProcessorEditor (&p), graph(p.graph), audioProcessor(p)
+    : AudioProcessorEditor (&p), graph(p.graph), audioProcessor(p), topBar(p)
 {
     addAndMakeVisible(viewport);
     viewport.setViewedComponent(new GraphEditorPanel(p.apvts, graph), true);
     viewport.getViewedComponent()->setSize(4000, 4000);
+
+    addAndMakeVisible(topBar);
 
     setResizable(true, true);
 
@@ -47,7 +49,10 @@ void ByteBeatNodeGraphAudioProcessorEditor::paint (juce::Graphics& g)
 
 void ByteBeatNodeGraphAudioProcessorEditor::resized()
 {
-    viewport.setBounds(getLocalBounds());
+    auto bounds = getLocalBounds();
+    topBar.setBounds(bounds.removeFromTop(50));
+
+    viewport.setBounds(bounds);
     audioProcessor.apvts.state.setProperty("windowWidth", getWidth(), nullptr);
     audioProcessor.apvts.state.setProperty("windowHeight", getHeight(), nullptr);
 

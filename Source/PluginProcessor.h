@@ -19,7 +19,7 @@
 //==============================================================================
 /**
 */
-class ByteBeatNodeGraphAudioProcessor  : public juce::AudioProcessor //, public juce::ChangeListener
+class ByteBeatNodeGraphAudioProcessor  : public juce::AudioProcessor , public juce::ChangeBroadcaster
 
 {
 public:
@@ -68,6 +68,9 @@ public:
 
     void setNodeProcessorSequence(GraphRenderSequence& sequence);
 
+
+    juce::Atomic<float> beatsPerMinute{0};
+    juce::Atomic<bool> syncToHost{false};
 
 
 private:

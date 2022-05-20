@@ -87,7 +87,7 @@ public:
     OutputNodeProcessor() : NodeProcessor(true) {}
 
 
-    void processnNextValue()
+    void processNextValue()
     {
 	    float value = 0;
 
@@ -112,15 +112,22 @@ public:
 
     ParameterNodeProcessor(juce::AudioParameterFloat& param) : NodeProcessor(false), parameter(param)
     {
-
+        smoothedValue.reset(10000);
     }
 
     void processNextValue() override
     {
-        outValue = parameter.get();
+        auto value = parameter.get();
+
+    	smoothedValue.setTargetValue(value);
+        
+        outValue = smoothedValue.getNextValue();
+        //DBG(outValue);
+    	//outValue = parameter.get();
     }
 
 private:
+    juce::SmoothedValue<double, juce::ValueSmoothingTypes::Linear> smoothedValue;
     juce::AudioParameterFloat& parameter;
 };
 
@@ -133,13 +140,37 @@ public:
     //Constructs empty NodeProcessorSequence
     //NodeProcessorSequence() = default;
 
-    void setCounters(float sampleRate, float noteFrequency, float beatsPerMinute)
+    void startNote(float sampleRate, float noteFrequency)
     {
-        dh = 256.f / sampleRate;
+        counterValues.n = 0;
         dn =  noteFrequency * 256.f / sampleRate;
-        dbpm = beatsPerMinute / 60.f * 256.f / sampleRate;
     }
 
+    void sync(juce::AudioPlayHead::CurrentPositionInfo& positionInfo, double sampleRate)
+    {
+	    counterValues.t = positionInfo.timeInSamples;
+        counterValues.h = positionInfo.timeInSeconds * 256.f;
+        counterValues.bpm = positionInfo.timeInSeconds * 256.f * positionInfo.bpm / 60;
+
+        dh = 256.f / sampleRate;
+        dbpm = positionInfo.bpm / 60.f * 256.f / sampleRate;
+    }
+
+    void setBPM(double _bpm, double sampleRate)
+    {
+        bpm = _bpm;
+        dbpm = _bpm / 60.f * 256.f / sampleRate;
+    }
+
+    void setTimes(double timeInSeconds, juce::int64 timeInSamples, double sampleRate)
+    {
+
+        counterValues.t = timeInSamples;
+        counterValues.h = timeInSeconds * 256.f;
+        counterValues.bpm = timeInSeconds * 256.f * bpm / 60;
+
+    	dh = 256.f / sampleRate;
+    }
 
     float getNextSample()
     {
@@ -170,8 +201,9 @@ private:
 
 
     float t = 0.f;
-    float dh = 0.f;
+    float dh = 256.f / 48000;
     float dn = 0.f;
+    float bpm = 0;
     float dbpm = 0.f;
 
 
