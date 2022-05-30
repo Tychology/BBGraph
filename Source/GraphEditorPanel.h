@@ -68,6 +68,8 @@ public:
 
     void updateComponents();
 
+    void updateConnectors();
+
     void showPopupMenu (juce::Point<int> position);
 
     void beginConnectorDrag(InternalNodeGraph::NodeAndChannel source,

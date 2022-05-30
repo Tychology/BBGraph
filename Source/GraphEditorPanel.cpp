@@ -258,7 +258,10 @@ struct GraphEditorPanel::NodeComponent : public Component, // private AudioProce
 		    }
 	    }
 
+
         onResize();
+
+        panel.updateConnectors();
     }
 
 
@@ -1017,6 +1020,12 @@ void GraphEditorPanel::updateComponents()
 
 }
 
+void GraphEditorPanel::updateConnectors()
+{
+	for (auto* cc : connectors)
+		cc->update();
+}
+
 void GraphEditorPanel::showPopupMenu(juce::Point<int> position)
 {
 	menu.reset(new juce::PopupMenu);
@@ -1028,7 +1037,7 @@ void GraphEditorPanel::showPopupMenu(juce::Point<int> position)
     menu->addSeparator();
     menu->addItem(4, "Clear graph");
 
-    
+
 	menu->showMenuAsync({},
 	                    juce::ModalCallbackFunction::create([this, position](int r)
 	                    {
