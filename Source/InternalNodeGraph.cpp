@@ -475,6 +475,7 @@ void InternalNodeGraph::restoreFromTree(const juce::ValueTree& graphTree)
 				node->properties.set(propertyName, n.getProperty(propertyName));
 			}
 
+            node->update();
             /*
 			node->properties.set("x", n.getProperty("x"));
 			node->properties.set("y", n.getProperty("y"));

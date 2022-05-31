@@ -540,7 +540,7 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
 
         auto* node = graph.getNodeForId(nodeID);
         textBox.setText(node->properties.getWithDefault("expression", ""));
-
+        updateOutlineColor(node);
 
         textBox.onReturnKey = [this] ()
 		{
@@ -549,14 +549,12 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
 
         textBox.onFocusLost = [this] ()
 		{
-            if(auto* node = static_cast<InternalNodeGraph::ExpressionNode*>(graph.getNodeForId(nodeID)))
-            {
-	            auto expressionString = textBox.getText();
-				node->properties.set("expression", expressionString );
-
-				//node.parse(expressionString);
-            }
-
+            //if(auto* node = static_cast<InternalNodeGraph::ExpressionNode*>(graph.getNodeForId(nodeID)))
+            auto node = graph.getNodeForId(nodeID);
+        	auto expressionString = textBox.getText();
+        	node->properties.set("expression", expressionString );
+            node->update();
+            updateOutlineColor(node);
         };
 
         textBox.onTextChange = [this] ()
@@ -606,6 +604,19 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
     }
 
 private:
+    void updateOutlineColor(InternalNodeGraph::Node* node)
+    {
+	    if (node->properties.getWithDefault("validExpression", true))
+	    {
+		    textBox.setColour(textBox.outlineColourId, getLookAndFeel().findColour(textBox.outlineColourId));
+			textBox.setColour(textBox.focusedOutlineColourId, getLookAndFeel().findColour(textBox.focusedOutlineColourId));
+        }
+	    else
+	    {
+			textBox.setColour(textBox.outlineColourId, juce::Colours::red);
+            textBox.setColour(textBox.focusedOutlineColourId, juce::Colours::red);
+        }
+    }
 
 	juce::TextEditor textBox;
     juce::Font font {juce::Font::getDefaultMonospacedFontName(), 20, 0};

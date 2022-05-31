@@ -103,6 +103,9 @@ public:
         }
 
 
+        virtual void update() {}
+
+
     protected:
         friend class InternalNodeGraph;
         friend struct GraphRenderSequence;
@@ -153,7 +156,15 @@ public:
             properties.set("type", NodeType::Expression);
         }
 
+        void update() override
+        {
+	        auto valid = processor->update(properties.getWithDefault("expression", "").toString());
+	        properties.set("validExpression", valid);
+        }
+
         std::unique_ptr<ByteCodeProcessor> processor;
+
+
 
     private:
 
