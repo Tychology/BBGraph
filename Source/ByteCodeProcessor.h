@@ -134,7 +134,16 @@ public:
 
 		if (!tokenize(exprStr, tokenSequence, nums)) return false;
 
+		//Try to parse as postfix. If it fails, try to convert from infix to postfix, then try to parse as postfix again
+		if(!parsePostfix(tokenSequence))
+		{
+			if (!infixToPostfix(tokenSequence)) return false;
+			if (!parsePostfix(tokenSequence))  return false;
+		}
 
+
+		//std::swap(byteCode, tokenSequence); //Make threadsafe
+		//std::swap(numberConstants, nums);
 
 		return true;
 	}
@@ -193,6 +202,8 @@ private:
 			if (state == newToken)
 			{
 				buffer.clear();
+
+				if (currentChar == 0) break;
 
 				if (!juce::CharacterFunctions::isPrintable(currentChar) ||
 					juce::CharacterFunctions::isWhitespace(currentChar) ||
@@ -325,6 +336,99 @@ private:
 	}
 
 
+	bool parsePostfix(std::vector<Op>& tokenSequence)
+	{
+		int currentStackSize = 0;
+		int maxStackSize = 0;
+
+
+		for (auto op : tokenSequence)
+		{
+			//bounds checking
+			if (op < invert || op >= lparenthesis) return false;
+
+			//The net change in stack size of an op is 1 minus its arity
+			currentStackSize += 1 - tokens[op].arity;
+
+			//check for stack underflow
+			if (currentStackSize < 1) return false;
+
+			if (maxStackSize < currentStackSize) maxStackSize = currentStackSize;
+		}
+
+		return currentStackSize == 1;
+	}
+
+
+	bool infixToPostfix(std::vector<Op>& tokenSequence)
+	{
+		std::vector<Op> postfix;
+		std::vector<Op> stack;
+		stack.reserve(tokenSequence.size());
+		postfix.reserve(tokenSequence.size());
+
+		for (auto op : tokenSequence)
+		{
+			//bounds checking
+			if (op < invert || op >= error) return false;
+
+			auto opArity = tokens[op].arity;
+
+			if (opArity == 0)
+				postfix.push_back(op);
+
+			else if (opArity == 1 || op == lparenthesis)
+				stack.push_back(op);
+
+			else if (opArity == 2)
+			{
+				while (!stack.empty())
+				{
+					auto op2 = stack.back();
+					if (op2 == lparenthesis) break;
+					if (tokens[op2].prec < tokens[op].prec || tokens[op2].prec == tokens[op].prec && tokens[op].assoc ==
+						left)
+					{
+						postfix.push_back(op2);
+						stack.pop_back();
+					}
+					else break;
+				}
+
+				stack.push_back(op);
+			}
+			else if (op == rparenthesis)
+			{
+				while (true)
+				{
+					if (stack.empty()) return false; //Mismatched parens
+					auto op2 = stack.back();
+					if (op2 == lparenthesis)
+					{
+						stack.pop_back();
+						break;
+					}
+
+					postfix.push_back(op2);
+					stack.pop_back();
+				}
+			}
+		}
+		while (!stack.empty())
+		{
+			auto op = stack.back();
+			stack.pop_back();
+			if (op == lparenthesis) return false; //Mismatched parens
+			postfix.push_back(op);
+		}
+
+		postfix.shrink_to_fit();
+
+		std::swap(tokenSequence, postfix);
+
+		return true;
+	}
+
 	std::vector<Op> byteCode;
-	std::vector<float> numberConstants;
+	std::vector<double> numberConstants;
 };
