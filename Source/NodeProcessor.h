@@ -117,13 +117,13 @@ public:
 
     void processNextValue() override
     {
-        auto value = parameter.get();
+        //auto value = parameter.get();
 
-    	smoothedValue.setTargetValue(value);
+    	//smoothedValue.setTargetValue(value);
         
-        outValue = smoothedValue.getNextValue();
+        //outValue = smoothedValue.getNextValue();
         //DBG(outValue);
-    	//outValue = parameter.get();
+    	outValue = parameter.get();
     }
 
 private:

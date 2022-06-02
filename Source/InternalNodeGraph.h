@@ -154,6 +154,7 @@ public:
         ExpressionNode(NodeID n) : Node(n, expr_node_num_ins, 1)
         {
             properties.set("type", NodeType::Expression);
+            processor = std::make_unique<ByteCodeProcessor>();
         }
 
         void update() override

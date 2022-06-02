@@ -13,10 +13,10 @@
 
 struct CounterValues
 {
-	float t = 0.f;
-	float h = 0.f;
-	float n = 0.f;
-	float bpm = 0.f;
+	double t = 0.f;
+	double h = 0.f;
+	double n = 0.f;
+	double bpm = 0.f;
 };
 
 class ByteCodeProcessor
@@ -60,6 +60,16 @@ class ByteCodeProcessor
 		tangent,
 
 		numberConstant,
+
+		t,
+		h,
+		n,
+		bpm,
+
+		a,
+		b,
+		c,
+		d,
 
 		lparenthesis,
 		rparenthesis,
@@ -115,6 +125,18 @@ class ByteCodeProcessor
 
     {"", numberConstant, 0, none, 0},
 
+	{"t", t, 0, none, 0},
+	{"h", h, 0, none, 0},
+	{"n", n, 0, none, 0},
+	{"bpm", bpm, 0, none, 0},
+
+	{"a", a, 0, none, 0},
+	{"b", b, 0, none, 0},
+	{"c", c, 0, none, 0},
+	{"d", d, 0, none, 0},
+
+
+
     {"(", lparenthesis, 0, none, -1},
     {")", rparenthesis, 0, none, -1}
 
@@ -142,8 +164,8 @@ public:
 		}
 
 
-		//std::swap(byteCode, tokenSequence); //Make threadsafe
-		//std::swap(numberConstants, nums);
+		std::swap(byteCode, tokenSequence); //Make threadsafe
+		std::swap(numberConstants, nums);
 
 		return true;
 	}
@@ -153,8 +175,120 @@ public:
 	{
 		//DBG(inputValues[0]);
 		//return (std::sin(  counterValues.n / 256 * juce::MathConstants<float>::twoPi) + 1) * inpuValues[0];
-		return (static_cast<int>(counterValues.n * inputValues[0]) & 255);
-		//return inputValues[0];
+		
+		if (byteCode.empty()) return 0;
+
+		std::vector<double> stack;
+		stack.resize(100);
+		int top = -1;
+
+		auto* codePtr = byteCode.data();
+		auto* numPtr = numberConstants.data();
+		auto* stackPtr = stack.data();
+
+		int nextNum = 0;
+
+
+
+		for (auto op : byteCode)
+		{
+			switch (op)
+			{
+			case invert:        stackPtr[top] = -stackPtr[top];  break;
+			case add:           stackPtr[top - 1] = stackPtr[top - 1] + stackPtr[top]; --top; break;
+			case subtract:       stackPtr[top - 1] = stackPtr[top - 1] - stackPtr[top]; --top; break;
+			case multiply:  stackPtr[top - 1] = stackPtr[top - 1] * stackPtr[top]; --top; break;
+			case divide:  stackPtr[top - 1] = stackPtr[top - 1] / stackPtr[top]; --top; break;
+
+			case modulo:  if ((int)stackPtr[top]) stackPtr[top - 1] = (int)stackPtr[top - 1] % (int)stackPtr[top]; else return 0; --top; break;
+
+			case bitnot: stackPtr[top] = ~(int)stackPtr[top];  break;
+			case bitand :  stackPtr[top - 1] = (int)stackPtr[top - 1] & (int)stackPtr[top]; --top; break;
+			case bitor :  stackPtr[top - 1] = (int)stackPtr[top - 1] | (int)stackPtr[top]; --top; break;
+			case bitxor:  stackPtr[top - 1] = (int)stackPtr[top - 1] ^ (int)stackPtr[top]; --top; break;
+			case lshift: stackPtr[top - 1] = (int)stackPtr[top - 1] << (int)stackPtr[top]; --top; break;
+			case rshift: stackPtr[top - 1] = (int)stackPtr[top - 1] >> (int)stackPtr[top]; --top; break;
+
+			case not:  stackPtr[top] = !(int)stackPtr[top]; break;
+			case and : stackPtr[top - 1] = (int)stackPtr[top - 1] && (int)stackPtr[top]; --top; break;
+			case or : stackPtr[top - 1] = (int)stackPtr[top - 1] || (int)stackPtr[top]; --top; break;
+
+			case equal:         stackPtr[top - 1] = juce::approximatelyEqual(stackPtr[top - 1], stackPtr[top]); --top; break;
+			case notequal:      stackPtr[top - 1] = !juce::approximatelyEqual(stackPtr[top - 1], stackPtr[top]); --top; break;
+			case less:          stackPtr[top - 1] = stackPtr[top - 1] < stackPtr[top]; --top; break;
+			case lessorequal:   stackPtr[top - 1] = stackPtr[top - 1] <= stackPtr[top]; --top; break;
+			case greater:       stackPtr[top - 1] = stackPtr[top - 1] > stackPtr[top]; --top; break;
+			case greaterorequal:stackPtr[top - 1] = stackPtr[top - 1] >= stackPtr[top]; --top; break;
+
+			case sine:  stackPtr[top] = std::sin(stackPtr[top]); break;
+			case cosine: stackPtr[top] = std::cos(stackPtr[top]); break;
+			case tangent: stackPtr[top] = std::tan(stackPtr[top]); break;
+
+			case numberConstant: stackPtr[++top] = numberConstants[nextNum++]; break;
+
+			case t: stackPtr[++top] = counterValues.t; break;
+			case h: stackPtr[++top] = counterValues.h; break;
+			case n: stackPtr[++top] = counterValues.n; break;
+			case bpm: stackPtr[++top] = counterValues.bpm; break;
+
+
+			case a: stackPtr[++top] = inputValues[0]; break;
+			case b: stackPtr[++top] = inputValues[1]; break;
+			case c: stackPtr[++top] = inputValues[2]; break;
+			case d: stackPtr[++top] = inputValues[3]; break;
+				
+
+			case lparenthesis: break;
+			case rparenthesis: break;
+			case error: break;
+			default:;
+			}
+		}
+
+		/*  while (true)
+		  {
+
+
+			  switch (*codePtr++)
+			  {
+			  case invert: *stackPtr = -*stackPtr; break;
+			  case add: *(stackPtr-1) = *(stackPtr-1) + *stackPtr; --stackPtr; break;
+			  case subtract: break;
+			  case multiply: break;
+			  case divide: break;
+			  case modulo: break;
+			  case bitnot: break;
+			  case bitand: break;
+			  case bitor: break;
+			  case bitxor: break;
+			  case lshift: break;
+			  case rshift: break;
+			  case not: break;
+			  case and: break;
+			  case or: break;
+			  case equal: break;
+			  case notequal: break;
+			  case less: break;
+			  case lessorequal: break;
+			  case greater: break;
+			  case greaterorequal: break;
+			  case sine: break;
+			  case cosine: break;
+			  case tangent: break;
+			  case numberConstant: break;
+			  case lparenthesis: break;
+			  case rparenthesis: break;
+			  case error: break;
+			  default: ;
+			  }
+		  }*/
+
+		fpclassify(0.0);
+
+
+		auto result = stack[top];
+
+		return isinf(result) || isnan(result) ? 0.0 : result;
 	}
 
 

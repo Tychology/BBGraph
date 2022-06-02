@@ -33,6 +33,9 @@ ByteBeatNodeGraphAudioProcessor::ByteBeatNodeGraphAudioProcessor()
 
     synth.addSound(new SynthSound());
     synth.addVoice(new SynthVoice());
+    synth.addVoice(new SynthVoice());
+    synth.addVoice(new SynthVoice());
+    synth.addVoice(new SynthVoice());
 }
 
 ByteBeatNodeGraphAudioProcessor::~ByteBeatNodeGraphAudioProcessor()

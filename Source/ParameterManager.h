@@ -66,7 +66,7 @@ public:
 
     void removeConection(juce::AudioParameterFloat& parameter)
     {
-        isParameterConnected.reset(parameter.getParameterID().getIntValue());
+        isParameterConnected.reset(parameter.paramID.getIntValue());
     }
 
     void removeConnection(juce::String parameterID)
