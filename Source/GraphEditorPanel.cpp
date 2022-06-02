@@ -559,10 +559,7 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
 
         textBox.onTextChange = [this] ()
 		{
-            auto textWidth = font.getStringWidthFloat(textBox.getText());
-            auto w = juce::jmin(juce::jmax(textWidth + characterWidth + pinSize * 2, defaultWidth), maxWidth);
-        	setSize(w, getHeight());
-
+            updateWidth();
         };
 
         characterWidth = font.getStringWidthFloat("0");
@@ -571,13 +568,13 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
         maxWidth = characterWidth * 64 + pinSize * 2;
 
         setSize(defaultWidth, font.getHeight() + pinSize * 4);
-
+        updateWidth();
 
     }
 
     void showPopupMenu() override
     {
-                menu.reset (new juce::PopupMenu);
+    	menu.reset (new juce::PopupMenu);
         menu->addItem (1, "Delete");
         menu->addItem (2, "Disconnect all pins");
 
@@ -618,11 +615,21 @@ private:
         }
     }
 
+    void updateWidth()
+    {
+        auto textWidth = font.getStringWidthFloat(textBox.getText());
+    	auto w = juce::jmin(juce::jmax(textWidth + characterWidth + pinSize * 2, defaultWidth), maxWidth);
+        auto center = getBounds().getCentre();
+    	setSize(w, getHeight());
+        setCentrePosition(center);
+        panel.updateConnectors();
+    }
+
 	juce::TextEditor textBox;
     juce::Font font {juce::Font::getDefaultMonospacedFontName(), 20, 0};
     float characterWidth;
     float defaultWidth;
-    float maxWidth;
+    float maxWidth = 0;
 };
 
 
