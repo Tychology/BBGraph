@@ -24,7 +24,7 @@ public:
 
     std::vector<std::vector<NodeProcessor*>> inputs;
 
-    float outValue{0.f};
+    double outValue{0.f};
 
     const bool isOutputNode;
 
@@ -56,7 +56,7 @@ public:
 	        {
                 auto& input = inputs[i];
 
-                float value = 0.f;
+                double value = 0.f;
 
                 for (auto inputConnection : input)
                 {
@@ -74,7 +74,7 @@ public:
 private:
 
 
-    float inputValues[expr_node_num_ins] {0.f};
+    double inputValues[expr_node_num_ins] {0.f};
     CounterValues& counterValues;
 
     ByteCodeProcessor& processor;
@@ -89,7 +89,7 @@ public:
 
     void processNextValue()
     {
-	    float value = 0;
+	    double value = 0;
 
         auto& input = inputs[0];
 
@@ -140,7 +140,7 @@ public:
     //Constructs empty NodeProcessorSequence
     //NodeProcessorSequence() = default;
 
-    void startNote(float sampleRate, float noteFrequency)
+    void startNote(double sampleRate, double noteFrequency)
     {
         counterValues.n = 0;
         dn =  noteFrequency * 256.f / sampleRate;
@@ -200,11 +200,11 @@ private:
 
 
 
-    float t = 0.f;
-    float dh = 256.f / 48000;
-    float dn = 0.f;
-    float bpm = 0;
-    float dbpm = 0.f;
+	double t = 0.f;
+    double dh = 256.f / 48000;
+    double dn = 0.f;
+    double bpm = 0;
+    double dbpm = 0.f;
 
 
 };

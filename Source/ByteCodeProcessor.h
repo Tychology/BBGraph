@@ -70,12 +70,16 @@ class ByteCodeProcessor
 		arccosine,
 		arctangent,
 
+		
+
 		numberConstant,
 
 		pi,
 		twopi,
 		halfpi,
 		e,
+
+		rand,
 
 		t,
 		h,
@@ -161,6 +165,8 @@ class ByteCodeProcessor
 		{"twoPi", twopi, 0, none, 0},
 		{"halfPi", halfpi, 0, none, 0},
 		{"e", e, 0, none, 0},
+
+		{"rand", rand, 0, none, 0},
 
 
 		{"t", t, 0, none, 0},
@@ -340,6 +346,8 @@ public:
 			case e: stackPtr[++top] = juce::MathConstants<double>::euler;
 				break;
 
+			case rand: stackPtr[++top] = (double)std::rand() / RAND_MAX;
+				break;
 
 			case t: stackPtr[++top] = counterValues.t;
 				break;
