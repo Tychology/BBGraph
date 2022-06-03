@@ -164,6 +164,8 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
         buffer.addFrom(channel, 0, channelZero, buffer.getNumSamples());
 
     }
+
+    buffer.applyGain(0.25);
 }
 
 

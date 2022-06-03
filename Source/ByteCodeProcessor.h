@@ -48,18 +48,34 @@ class ByteCodeProcessor
 		greater,
 		greaterorequal,
 
-		/*  absolute,
-		  min,
-		  max,
+		power,
 
-		  power,*/
+		sqrt,
+		cbrt,
+
+		exp,
+		exp2,
+		log,
+		log2,
+		log10,
+
+
+		absolute,
 
 
 		sine,
 		cosine,
 		tangent,
+		arcsine,
+		arccosine,
+		arctangent,
 
 		numberConstant,
+
+		pi,
+		twopi,
+		halfpi,
+		e,
 
 		t,
 		h,
@@ -77,79 +93,98 @@ class ByteCodeProcessor
 		error,
 	};
 
-	enum Assoc {none=0, left, right};
+	enum Assoc { none=0, left, right };
 
 	struct tokenProperties
-{
-    const char* str;
-    const Op op;
-	const int prec;
-    const Assoc assoc;
-    const int arity;
-};
+	{
+		const char* str;
+		const Op op;
+		const int prec;
+		const Assoc assoc;
+		const int arity;
+	};
 
 	static constexpr tokenProperties tokens[]
-{
+	{
 
-    {"_", invert, 2, right, 1}, //using "_" for the unary minus to make parsing easier
-    {"+", add, 6, left, 2},
-	{"-", subtract,6, left, 2 },
-	{"*", multiply, 5, left, 2},
-	{"/", divide, 5, left, 2},
-	{"%", modulo, 5, left, 2},
+		{"_", invert, 2, right, 1}, //using "_" for the unary minus to make parsing easier
+		{"+", add, 6, left, 2},
+		{"-", subtract, 6, left, 2},
+		{"*", multiply, 5, left, 2},
+		{"/", divide, 5, left, 2},
+		{"%", modulo, 5, left, 2},
 
-	{"~", bitnot, 2, right, 1},
-	{"&", bitand, 11, left, 2},
-	{"|", bitor, 13, left, 2},
-	{"^", bitxor,12, left, 2},
-	{"<<", lshift, 7, left, 2},
-	{">>", rshift,  7, left, 2},
+		{"~", bitnot, 2, right, 1},
+		{"&", bitand, 11, left, 2},
+		{"|", bitor, 13, left, 2},
+		{"^", bitxor, 12, left, 2},
+		{"<<", lshift, 7, left, 2},
+		{">>", rshift, 7, left, 2},
 
-	{"!", not, 2, right, 1},
-	{"&&", and, 14, left, 2},
-	{"||", or, 15, left, 2},
+		{"!", not, 2, right, 1},
+		{"&&", and, 14, left, 2},
+		{"||", or, 15, left, 2},
 
-	{"==", equal, 10, left, 2},
-	{"!=", notequal, 10, left, 2},
-	{"<", less, 9, left, 2},
-	{"<=", lessorequal, 9, left, 2},
-	{">", greater, 9, left, 2},
-	{">=", greaterorequal, 9, left, 2},
+		{"==", equal, 10, left, 2},
+		{"!=", notequal, 10, left, 2},
+		{"<", less, 9, left, 2},
+		{"<=", lessorequal, 9, left, 2},
+		{">", greater, 9, left, 2},
+		{">=", greaterorequal, 9, left, 2},
 
+		{"**", power, 3, right, 2},
 
+		{"sqrt", sqrt, 2, right, 1},
+		{"cbrt", cbrt, 2, right, 1},
 
-
-    {"sin", sine, 2, right, 1},
-    {"cos", cosine, 2, right, 1},
-    {"tan", tangent, 2, right, 1},
-
-    {"", numberConstant, 0, none, 0},
-
-	{"t", t, 0, none, 0},
-	{"h", h, 0, none, 0},
-	{"n", n, 0, none, 0},
-	{"bpm", bpm, 0, none, 0},
-
-	{"a", a, 0, none, 0},
-	{"b", b, 0, none, 0},
-	{"c", c, 0, none, 0},
-	{"d", d, 0, none, 0},
+		{"exp", exp, 2, right, 1},
+		{"exp2", exp2, 2, right, 1},
+		{"log", log, 2, right, 1},
+		{"log2", log2, 2, right, 1},
+		{"log10", log10, 2, right, 1},
 
 
-
-    {"(", lparenthesis, 0, none, -1},
-    {")", rparenthesis, 0, none, -1}
+		{"abs", absolute, 2, right, 1},
 
 
-};
+		{"sin", sine, 2, right, 1},
+		{"cos", cosine, 2, right, 1},
+		{"tan", tangent, 2, right, 1},
+		{"asin", arcsine, 2, right, 1},
+		{"acos", arccosine, 2, right, 1},
+		{"atan", arctangent, 2, right, 1},
+
+
+		{"", numberConstant, 0, none, 0},
+
+		{"pi", pi, 0, none, 0},
+		{"twoPi", twopi, 0, none, 0},
+		{"halfPi", halfpi, 0, none, 0},
+		{"e", e, 0, none, 0},
+
+
+		{"t", t, 0, none, 0},
+		{"h", h, 0, none, 0},
+		{"n", n, 0, none, 0},
+		{"bpm", bpm, 0, none, 0},
+
+		{"a", a, 0, none, 0},
+		{"b", b, 0, none, 0},
+		{"c", c, 0, none, 0},
+		{"d", d, 0, none, 0},
+
+
+		{"(", lparenthesis, 0, none, -1},
+		{")", rparenthesis, 0, none, -1}
+
+
+	};
 
 	enum State { newToken, minusRead, readNumber, readWord, readSymbols };
 
 
-
-
 public:
-	bool update(juce::StringRef exprStr)//, juce::String& errorStr)
+	bool update(juce::StringRef exprStr) //, juce::String& errorStr)
 	{
 		std::vector<Op> tokenSequence;
 		std::vector<double> nums;
@@ -157,10 +192,10 @@ public:
 		if (!tokenize(exprStr, tokenSequence, nums)) return false;
 
 		//Try to parse as postfix. If it fails, try to convert from infix to postfix, then try to parse as postfix again
-		if(!parsePostfix(tokenSequence))
+		if (!parsePostfix(tokenSequence))
 		{
 			if (!infixToPostfix(tokenSequence)) return false;
-			if (!parsePostfix(tokenSequence))  return false;
+			if (!parsePostfix(tokenSequence)) return false;
 		}
 
 
@@ -171,11 +206,11 @@ public:
 	}
 
 
-	float process(float* inputValues, CounterValues& counterValues)
+	double process(const double* inputValues, const CounterValues& counterValues)
 	{
 		//DBG(inputValues[0]);
 		//return (std::sin(  counterValues.n / 256 * juce::MathConstants<float>::twoPi) + 1) * inpuValues[0];
-		
+
 		if (byteCode.empty()) return 0;
 
 		std::vector<double> stack;
@@ -189,101 +224,149 @@ public:
 		int nextNum = 0;
 
 
-
 		for (auto op : byteCode)
 		{
 			switch (op)
 			{
-			case invert:        stackPtr[top] = -stackPtr[top];  break;
-			case add:           stackPtr[top - 1] = stackPtr[top - 1] + stackPtr[top]; --top; break;
-			case subtract:       stackPtr[top - 1] = stackPtr[top - 1] - stackPtr[top]; --top; break;
-			case multiply:  stackPtr[top - 1] = stackPtr[top - 1] * stackPtr[top]; --top; break;
-			case divide:  stackPtr[top - 1] = stackPtr[top - 1] / stackPtr[top]; --top; break;
+			case invert: stackPtr[top] = -stackPtr[top];
+				break;
+			case add: stackPtr[top - 1] = stackPtr[top - 1] + stackPtr[top];
+				--top;
+				break;
+			case subtract: stackPtr[top - 1] = stackPtr[top - 1] - stackPtr[top];
+				--top;
+				break;
+			case multiply: stackPtr[top - 1] = stackPtr[top - 1] * stackPtr[top];
+				--top;
+				break;
+			case divide: stackPtr[top - 1] = stackPtr[top - 1] / stackPtr[top];
+				--top;
+				break;
 
-			case modulo:  if ((int)stackPtr[top]) stackPtr[top - 1] = (int)stackPtr[top - 1] % (int)stackPtr[top]; else return 0; --top; break;
+			//case modulo:  if ((int)stackPtr[top]) stackPtr[top - 1] = (int)stackPtr[top - 1] % (int)stackPtr[top]; else return 0; --top; break;
+			case modulo: stackPtr[top - 1] = std::fmod(stackPtr[top - 1], stackPtr[top]);
+				--top;
+				break;
 
-			case bitnot: stackPtr[top] = ~(int)stackPtr[top];  break;
-			case bitand :  stackPtr[top - 1] = (int)stackPtr[top - 1] & (int)stackPtr[top]; --top; break;
-			case bitor :  stackPtr[top - 1] = (int)stackPtr[top - 1] | (int)stackPtr[top]; --top; break;
-			case bitxor:  stackPtr[top - 1] = (int)stackPtr[top - 1] ^ (int)stackPtr[top]; --top; break;
-			case lshift: stackPtr[top - 1] = (int)stackPtr[top - 1] << (int)stackPtr[top]; --top; break;
-			case rshift: stackPtr[top - 1] = (int)stackPtr[top - 1] >> (int)stackPtr[top]; --top; break;
+			case bitnot: stackPtr[top] = ~(int)stackPtr[top];
+				break;
+			case bitand: stackPtr[top - 1] = (int)stackPtr[top - 1] & (int)stackPtr[top];
+				--top;
+				break;
+			case bitor: stackPtr[top - 1] = (int)stackPtr[top - 1] | (int)stackPtr[top];
+				--top;
+				break;
+			case bitxor: stackPtr[top - 1] = (int)stackPtr[top - 1] ^ (int)stackPtr[top];
+				--top;
+				break;
+			case lshift: stackPtr[top - 1] = (int)stackPtr[top - 1] << (int)stackPtr[top];
+				--top;
+				break;
+			case rshift: stackPtr[top - 1] = (int)stackPtr[top - 1] >> (int)stackPtr[top];
+				--top;
+				break;
 
-			case not:  stackPtr[top] = !(int)stackPtr[top]; break;
-			case and : stackPtr[top - 1] = (int)stackPtr[top - 1] && (int)stackPtr[top]; --top; break;
-			case or : stackPtr[top - 1] = (int)stackPtr[top - 1] || (int)stackPtr[top]; --top; break;
+			case not: stackPtr[top] = !(int)stackPtr[top];
+				break;
+			case and: stackPtr[top - 1] = (int)stackPtr[top - 1] && (int)stackPtr[top];
+				--top;
+				break;
+			case or: stackPtr[top - 1] = (int)stackPtr[top - 1] || (int)stackPtr[top];
+				--top;
+				break;
 
-			case equal:         stackPtr[top - 1] = juce::approximatelyEqual(stackPtr[top - 1], stackPtr[top]); --top; break;
-			case notequal:      stackPtr[top - 1] = !juce::approximatelyEqual(stackPtr[top - 1], stackPtr[top]); --top; break;
-			case less:          stackPtr[top - 1] = stackPtr[top - 1] < stackPtr[top]; --top; break;
-			case lessorequal:   stackPtr[top - 1] = stackPtr[top - 1] <= stackPtr[top]; --top; break;
-			case greater:       stackPtr[top - 1] = stackPtr[top - 1] > stackPtr[top]; --top; break;
-			case greaterorequal:stackPtr[top - 1] = stackPtr[top - 1] >= stackPtr[top]; --top; break;
+			case equal: stackPtr[top - 1] = juce::approximatelyEqual(stackPtr[top - 1], stackPtr[top]);
+				--top;
+				break;
+			case notequal: stackPtr[top - 1] = !juce::approximatelyEqual(stackPtr[top - 1], stackPtr[top]);
+				--top;
+				break;
+			case less: stackPtr[top - 1] = stackPtr[top - 1] < stackPtr[top];
+				--top;
+				break;
+			case lessorequal: stackPtr[top - 1] = stackPtr[top - 1] <= stackPtr[top];
+				--top;
+				break;
+			case greater: stackPtr[top - 1] = stackPtr[top - 1] > stackPtr[top];
+				--top;
+				break;
+			case greaterorequal: stackPtr[top - 1] = stackPtr[top - 1] >= stackPtr[top];
+				--top;
+				break;
 
-			case sine:  stackPtr[top] = std::sin(stackPtr[top]); break;
-			case cosine: stackPtr[top] = std::cos(stackPtr[top]); break;
-			case tangent: stackPtr[top] = std::tan(stackPtr[top]); break;
+			case power: stackPtr[top - 1] = std::pow(stackPtr[top - 1], stackPtr[top]);
+				--top;
+				break;
 
-			case numberConstant: stackPtr[++top] = numberConstants[nextNum++]; break;
+			case sqrt: stackPtr[top] = std::sqrt(stackPtr[top]);
+				break;
+			case cbrt: stackPtr[top] = std::cbrt(stackPtr[top]);
+				break;
 
-			case t: stackPtr[++top] = counterValues.t; break;
-			case h: stackPtr[++top] = counterValues.h; break;
-			case n: stackPtr[++top] = counterValues.n; break;
-			case bpm: stackPtr[++top] = counterValues.bpm; break;
+			case exp: stackPtr[top] = std::exp(stackPtr[top]);
+				break;
+			case exp2: stackPtr[top] = std::exp2(stackPtr[top]);
+				break;
+			case log: stackPtr[top] = std::log(stackPtr[top]);
+				break;
+			case log2: stackPtr[top] = std::log2(stackPtr[top]);
+				break;
+			case log10: stackPtr[top] = std::log10(stackPtr[top]);
+				break;
 
 
-			case a: stackPtr[++top] = inputValues[0]; break;
-			case b: stackPtr[++top] = inputValues[1]; break;
-			case c: stackPtr[++top] = inputValues[2]; break;
-			case d: stackPtr[++top] = inputValues[3]; break;
-				
+			case sine: stackPtr[top] = std::sin(stackPtr[top]);
+				break;
+			case cosine: stackPtr[top] = std::cos(stackPtr[top]);
+				break;
+			case tangent: stackPtr[top] = std::tan(stackPtr[top]);
+				break;
+			case arcsine: stackPtr[top] = std::asin(stackPtr[top]);
+				break;
+			case arccosine: stackPtr[top] = std::acos(stackPtr[top]);
+				break;
+			case arctangent: stackPtr[top] = std::atan(stackPtr[top]);
+				break;
+
+			case numberConstant: stackPtr[++top] = numberConstants[nextNum++];
+				break;
+
+			case pi: stackPtr[++top] = juce::MathConstants<double>::pi;
+				break;
+			case twopi: stackPtr[++top] = juce::MathConstants<double>::twoPi;
+				break;
+			case halfpi: stackPtr[++top] = juce::MathConstants<double>::halfPi;
+				break;
+			case e: stackPtr[++top] = juce::MathConstants<double>::euler;
+				break;
+
+
+			case t: stackPtr[++top] = counterValues.t;
+				break;
+			case h: stackPtr[++top] = counterValues.h;
+				break;
+			case n: stackPtr[++top] = counterValues.n;
+				break;
+			case bpm: stackPtr[++top] = counterValues.bpm;
+				break;
+
+
+			case a: stackPtr[++top] = inputValues[0];
+				break;
+			case b: stackPtr[++top] = inputValues[1];
+				break;
+			case c: stackPtr[++top] = inputValues[2];
+				break;
+			case d: stackPtr[++top] = inputValues[3];
+				break;
+
 
 			case lparenthesis: break;
 			case rparenthesis: break;
 			case error: break;
-			default:;
+			default: ;
 			}
 		}
-
-		/*  while (true)
-		  {
-
-
-			  switch (*codePtr++)
-			  {
-			  case invert: *stackPtr = -*stackPtr; break;
-			  case add: *(stackPtr-1) = *(stackPtr-1) + *stackPtr; --stackPtr; break;
-			  case subtract: break;
-			  case multiply: break;
-			  case divide: break;
-			  case modulo: break;
-			  case bitnot: break;
-			  case bitand: break;
-			  case bitor: break;
-			  case bitxor: break;
-			  case lshift: break;
-			  case rshift: break;
-			  case not: break;
-			  case and: break;
-			  case or: break;
-			  case equal: break;
-			  case notequal: break;
-			  case less: break;
-			  case lessorequal: break;
-			  case greater: break;
-			  case greaterorequal: break;
-			  case sine: break;
-			  case cosine: break;
-			  case tangent: break;
-			  case numberConstant: break;
-			  case lparenthesis: break;
-			  case rparenthesis: break;
-			  case error: break;
-			  default: ;
-			  }
-		  }*/
-
-		fpclassify(0.0);
 
 
 		auto result = stack[top];
@@ -293,10 +376,7 @@ public:
 
 
 private:
-
-
-
-	Op getTokenFromString(std::string const& buffer)
+	static Op getTokenFromString(std::string const& buffer)
 	{
 		for (const auto& p : tokens)
 		{
@@ -310,7 +390,7 @@ private:
 	}
 
 
-	bool tokenize(juce::StringRef expressionString, std::vector<Op>& tokenSequence,
+	static bool tokenize(juce::StringRef expressionString, std::vector<Op>& tokenSequence,
 	              std::vector<double>& numberConstants)
 	{
 		if (expressionString.isEmpty()) return true;
@@ -417,7 +497,7 @@ private:
 
 				currentChar = charPtr.getAndAdvance();
 
-				if (juce::CharacterFunctions::isLetter(currentChar))
+				if (juce::CharacterFunctions::isLetter(currentChar) || juce::CharacterFunctions::isDigit(currentChar))
 				{
 					buffer += (char)currentChar;
 				}
@@ -470,7 +550,7 @@ private:
 	}
 
 
-	bool parsePostfix(std::vector<Op>& tokenSequence)
+	static bool parsePostfix(std::vector<Op>& tokenSequence)
 	{
 		int currentStackSize = 0;
 		int maxStackSize = 0;
@@ -494,7 +574,7 @@ private:
 	}
 
 
-	bool infixToPostfix(std::vector<Op>& tokenSequence)
+	bool infixToPostfix(std::vector<Op>& tokenSequence) const
 	{
 		std::vector<Op> postfix;
 		std::vector<Op> stack;
