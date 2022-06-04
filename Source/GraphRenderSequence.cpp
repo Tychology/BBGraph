@@ -46,14 +46,42 @@ NodeProcessorSequence* GraphRenderSequence::createNodeProcessorSequence(juce::Au
 		}
 		else if (auto outputNode = dynamic_cast<InternalNodeGraph::OutputNode*>(node))
 		{
+			OutputType outputType;
 
-			auto processor = new OutputNodeProcessor();
-			processor->inputs.resize(1);
-			for (auto c : node->inputs)
+			if (outputNode->isStereo())
 			{
-				processor->inputs[c.thisChannel].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID.uid]]);
+				auto processorL = new OutputNodeProcessor(left);
+				auto processorR = new OutputNodeProcessor(right);
+				processorL->inputs.resize(1);
+				processorR->inputs.resize(1);
+
+				for (auto c : node->inputs)
+				{
+					if (c.thisChannel == 0)
+					{
+						processorL->inputs[0].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID.uid]]);
+					}
+					else
+					{
+						processorR->inputs[0].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID.uid]]);
+					}
+				}
+				sequence->processors.add(processorL);
+				sequence->processors.add(processorR);
 			}
-			sequence->processors.add(processor);
+			{
+				auto processor = new OutputNodeProcessor(mono);
+				processor->inputs.resize(1);
+
+
+				for (auto c : node->inputs)
+				{
+					processor->inputs[0].push_back(sequence->processors[nodeIDtoIndex[c.otherNode->nodeID.uid]]);
+				}
+				sequence->processors.add(processor);
+			}
+
+			
 		}
 		else if (auto paramNode = dynamic_cast<InternalNodeGraph::ParameterNode*>(node))
 		{

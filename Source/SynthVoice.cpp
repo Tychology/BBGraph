@@ -48,14 +48,19 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int sta
     if (processorSequence == nullptr) return;
 
 
-    auto* channelZero = outputBuffer.getWritePointer (0);
+    //auto* left = outputBuffer.getWritePointer (0);
+    auto channels = outputBuffer.getArrayOfWritePointers();
 
     auto end = startSample + numSamples;
 
 
+
     for (int i = startSample; i < end; ++i)
     {
-	    channelZero[i] += processorSequence->getNextSample();
+        auto stereoSample = processorSequence->getNextStereoSample();
+
+	    channels[0][i] += stereoSample.left;
+        channels[1][i] += stereoSample.right;
     }
 
     adsr.applyEnvelopeToBuffer(outputBuffer, 0, outputBuffer.getNumSamples());

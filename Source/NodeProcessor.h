@@ -14,6 +14,11 @@
 #include "ByteCodeProcessor.h"
 #include "Defines.h"
 
+
+enum OutputType{none, mono, left, right};
+
+struct StereoSample {float left; float right;};
+
 class NodeProcessor //: public juce::ReferenceCountedObject
 {
 public:
@@ -26,11 +31,12 @@ public:
 
     double outValue{0.f};
 
-    const bool isOutputNode;
+    //const bool isOutputNode;
+    const OutputType outputType;
 
-    ~NodeProcessor() = default;
+    virtual ~NodeProcessor() = default;
 protected:
-    NodeProcessor(bool isOutputNode ) : isOutputNode(isOutputNode) {}
+    NodeProcessor(OutputType ot ) : outputType(ot) {}
 
 
 
@@ -44,7 +50,7 @@ private:
 class ExpressionNodeProcessor : public NodeProcessor
 {
 public:
-    ExpressionNodeProcessor(ByteCodeProcessor& p, CounterValues& cv) : NodeProcessor(false), processor(p), counterValues(cv)
+    ExpressionNodeProcessor(ByteCodeProcessor& p, CounterValues& cv) : NodeProcessor(none), counterValues(cv), processor(p)
     {
     }
 
@@ -84,10 +90,11 @@ private:
 class OutputNodeProcessor : public NodeProcessor
 {
 public:
-    OutputNodeProcessor() : NodeProcessor(true) {}
+    OutputNodeProcessor(OutputType outputType) : NodeProcessor(outputType)
+    {}
 
 
-    void processNextValue()
+    void processNextValue() override
     {
 	    double value = 0;
 
@@ -101,7 +108,38 @@ public:
         outValue = static_cast<juce::uint8>(value) / 128.f - 1.f;
     }
 
+    StereoSample getNextStereoSample()
+    {
+	    double left;
+        double right;
 
+        auto& input = inputs[0];
+
+        for (auto inputConnection : inputs[0])
+        {
+                left += inputConnection->outValue;
+        }
+
+        for (auto inputConnection : inputs[1])
+        {
+                right += inputConnection->outValue;
+        }
+
+        if (outputType == mono)
+        {
+            auto value = static_cast<juce::uint8>(left + right) / 128.f - 1.f;
+	        return {value, value};
+        }
+        else
+        {
+            return {
+	        static_cast<juce::uint8>(left) / 128.f - 1.f,
+            static_cast<juce::uint8>(right) / 128.f - 1.f
+            };
+        }
+    
+	    
+    }
 
 };
 
@@ -110,7 +148,7 @@ class ParameterNodeProcessor : public NodeProcessor
 {
 public:
 
-    ParameterNodeProcessor(juce::AudioParameterFloat& param) : NodeProcessor(false), parameter(param)
+    ParameterNodeProcessor(juce::AudioParameterFloat& param) : NodeProcessor(none), parameter(param)
     {
         smoothedValue.reset(10000);
     }
@@ -172,15 +210,49 @@ public:
     	dh = 256.f / sampleRate;
     }
 
-    float getNextSample()
+    //float getNextSample()
+    //{
+	   // float sampleValue = 0.f;
+
+    //    for (auto p : processors)
+    //    {
+    //        p->processNextValue();
+
+    //        if (p->isOutputNode) sampleValue += p->outValue;
+    //    }
+
+
+    //    ++counterValues.t;
+    //    counterValues.h += dh;
+    //    counterValues.n += dn;
+    //    counterValues.bpm += dbpm;
+
+    //    return sampleValue;
+    //}
+
+   StereoSample getNextStereoSample()
     {
-	    float sampleValue = 0.f;
+	    StereoSample stereoSample{};
 
         for (auto p : processors)
         {
             p->processNextValue();
 
-            if (p->isOutputNode) sampleValue += p->outValue;
+            switch (p->outputType)
+            {
+            case none: break;
+            case mono:
+                stereoSample.left += p->outValue;
+                stereoSample.right += p->outValue;
+                break;
+            case left:
+                stereoSample.left += p->outValue;
+                break;
+            case right:
+                stereoSample.right += p->outValue;
+                break;
+            default: ;
+            }
         }
 
 
@@ -189,7 +261,7 @@ public:
         counterValues.n += dn;
         counterValues.bpm += dbpm;
 
-        return sampleValue;
+        return stereoSample;
     }
 
     juce::OwnedArray<NodeProcessor> processors;

@@ -181,12 +181,16 @@ public:
     class OutputNode : public Node
     {
     public:
-        OutputNode(NodeID n) : Node(n, 1, 0)
+        OutputNode(NodeID n) : Node(n, 2, 0)
         {
 	         properties.set("type", NodeType::Output);
         }
 
-
+        bool isStereo()
+        {
+            return std::any_of(inputs.begin(), inputs.end(), [](Connection c){return c.thisChannel == 0;}) &&
+                std::any_of(inputs.begin(), inputs.end(), [](Connection c){return c.thisChannel == 1;});
+        }
     };
 
     class ParameterNode : public Node

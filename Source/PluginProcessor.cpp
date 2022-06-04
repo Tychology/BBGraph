@@ -154,16 +154,16 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 
 
-    auto* channelZero = buffer.getWritePointer (0);
+    //auto* channelZero = buffer.getWritePointer (0);
 
-    //Currently we juce output the same audio on all
-     for (int channel = 1; channel < totalNumOutputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    ////Currently we juce output the same audio on all
+    // for (int channel = 1; channel < totalNumOutputChannels; ++channel)
+    //{
+    //    auto* channelData = buffer.getWritePointer (channel);
 
-        buffer.addFrom(channel, 0, channelZero, buffer.getNumSamples());
+    //    buffer.addFrom(channel, 0, channelZero, buffer.getNumSamples());
 
-    }
+    //}
 
     buffer.applyGain(0.25);
 }

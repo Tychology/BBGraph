@@ -582,6 +582,7 @@ private:
 	}
 
 
+
 	bool infixToPostfix(std::vector<Op>& tokenSequence) const
 	{
 		std::vector<Op> postfix;
