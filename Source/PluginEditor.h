@@ -48,13 +48,46 @@ public:
             auto value = bpmLabel.getText().getFloatValue();
             value = juce::jlimit(10.f, 400.f, value);
             audioProcessor.beatsPerMinute.set(value);
-            bpmLabel.setText(juce::String(value), juce::dontSendNotification);
+            bpmLabel.setText(juce::String(value) + " bpm", juce::dontSendNotification);
         };
 
-
-
         addAndMakeVisible(bpmLabel);
+
         updateBPM();
+
+
+        addAndMakeVisible(attackSlider);
+        attackSlider.setTextBoxStyle(attackSlider.NoTextBox, false, 0,0);
+        attackSlider.setSliderStyle(attackSlider.RotaryHorizontalVerticalDrag);
+        attackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Attack", attackSlider);
+
+        addAndMakeVisible(decaySlider);
+    	decaySlider.setTextBoxStyle(decaySlider.NoTextBox, false, 0,0);
+    	decaySlider.setSliderStyle(attackSlider.RotaryHorizontalVerticalDrag);
+        attackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Decay", attackSlider);
+
+        addAndMakeVisible(sustainSlider);
+    	sustainSlider.setTextBoxStyle(sustainSlider.NoTextBox, false, 0,0);
+    	sustainSlider.setSliderStyle(attackSlider.RotaryHorizontalVerticalDrag);
+        attackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Sustain", attackSlider);
+
+        addAndMakeVisible(releaseSlider);
+    	releaseSlider.setTextBoxStyle(releaseSlider.NoTextBox, false, 0,0);
+    	releaseSlider.setSliderStyle(attackSlider.RotaryHorizontalVerticalDrag);
+        attackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Release", attackSlider);
+
+        addAndMakeVisible(volumeSlider);
+        volumeSlider.setTextBoxStyle(volumeSlider.NoTextBox, false, 0,0);
+        volumeSlider.setSliderStyle(attackSlider.RotaryHorizontalVerticalDrag);
+        attackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Volume", attackSlider);
+
+
+        addAndMakeVisible(adsrLabel);
+        adsrLabel.setText("ADSR", juce::dontSendNotification);
+
+        addAndMakeVisible(volumeLabel);
+        volumeLabel.setText("Volume", juce::dontSendNotification);
+
     }
 
     ~TopBarComponent() override
@@ -70,13 +103,28 @@ public:
     void resized() override
 	{
         auto bounds = getLocalBounds();
-        syncToHostButton.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2));
-        bpmLabel.setBounds(bounds);
+       
+        syncToHostButton.setBounds(bounds.removeFromLeft(120));
+        bpmLabel.setBounds(bounds.removeFromLeft(75));
+        bpmLabel.setBounds(bpmLabel.getBounds().reduced(0, 20));
+        bpmLabel.setEditable(true);
+
+        bounds.removeFromLeft(50);
+        adsrLabel.setBounds(bounds.removeFromLeft(75));
+
+        attackSlider.setBounds(bounds.removeFromLeft(75));
+        decaySlider.setBounds(bounds.removeFromLeft(75));
+        sustainSlider.setBounds(bounds.removeFromLeft(75));
+        releaseSlider.setBounds(bounds.removeFromLeft(75));
+
+        bounds.removeFromLeft(50);
+        volumeLabel.setBounds(bounds.removeFromLeft(75));
+        volumeSlider.setBounds(bounds.removeFromLeft(75));
 	}
 
     void updateBPM ()
     {
-	     bpmLabel.setText(juce::String(audioProcessor.beatsPerMinute.get()), juce::dontSendNotification);
+	     bpmLabel.setText(juce::String(audioProcessor.beatsPerMinute.get()) + " bpm", juce::dontSendNotification);
     }
 
     void changeListenerCallback(juce::ChangeBroadcaster* source) override
@@ -88,7 +136,24 @@ private:
 
     juce::ToggleButton syncToHostButton;
     juce::Label bpmLabel;
-    //float bpm = 0;
+
+    juce::Slider attackSlider;
+    juce::Slider decaySlider;
+    juce::Slider sustainSlider;
+    juce::Slider releaseSlider;
+    juce::Slider volumeSlider;
+
+    juce::Label adsrLabel;
+
+    juce::Label volumeLabel;
+
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackSliderAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> decaySliderAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sustainSliderAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> releaseSliderAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> volumeSliderAttachment;
+
+
 
     ByteBeatNodeGraphAudioProcessor& audioProcessor;
 };

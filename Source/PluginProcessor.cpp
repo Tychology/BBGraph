@@ -9,6 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "GraphRenderSequence.h"
+#include "CustomRange.h"
 
 
 //==============================================================================
@@ -147,6 +148,23 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
     }
 
 
+    juce::ADSR::Parameters adsrParameters
+	{
+		apvts.getRawParameterValue("Attack")->load(),
+        apvts.getRawParameterValue("Decay")->load(),
+        apvts.getRawParameterValue("Sustain")->load(),
+        apvts.getRawParameterValue("Release")->load()
+    };
+
+    for (int i = 0; i < synth.getNumVoices(); ++i)
+    {
+	    if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+	    {
+            voice->updateADSR(adsrParameters);
+        }
+    }
+
+
 
 
 
@@ -165,7 +183,9 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
 
     //}
 
-    buffer.applyGain(0.25);
+
+
+    buffer.applyGain(juce::Decibels::decibelsToGain(apvts.getRawParameterValue("Volume")->load()));
 }
 
 
@@ -239,6 +259,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout ByteBeatNodeGraphAudioProces
      {
          params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::String(i), juce::String("Parameter ") += i, defaultRange, 0));
      }
+
+	params.push_back(std::make_unique<juce::AudioParameterFloat>("Attack", "Attack", logRange<float>(0.01, 10), 0.01));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("Decay", "Decay", logRange<float>(0.01, 10), 0.01));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("Sustain", "Sustain", juce::NormalisableRange<float>(0, 1), 1));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("Release", "Release", logRange<float>(0.01, 10), 0.01));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("Volume", "Volume", juce::NormalisableRange<float>(-72, 0), -12));
+
+    
 
      return {params.begin(), params.end()};
 }

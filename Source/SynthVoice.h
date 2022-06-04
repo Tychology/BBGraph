@@ -31,17 +31,17 @@ public:
 		adsr.setSampleRate(sampleRate);
 		//byte.prepareToPlay(sampleRate);
 
-
+		
 		juce::ADSR::Parameters adsrParams;
 
 		adsrParams.attack = 0.f;
 		adsrParams.decay = 0.f;
 		adsrParams.sustain = 1.f;
 		adsrParams.release = 0.f;
-
+		
 		adsr.setParameters(adsrParams);
 	}
-
+	
 
 	void sync(juce::AudioPlayHead::CurrentPositionInfo& positionInfo)
 	{
@@ -65,6 +65,12 @@ public:
 	void setProcessorSequence(NodeProcessorSequence* sequence)
 	{
 		processorSequence = std::unique_ptr<NodeProcessorSequence>(sequence);
+	}
+
+
+	void updateADSR(juce::ADSR::Parameters parameters)
+	{
+		adsr.setParameters(parameters);
 	}
 
 
