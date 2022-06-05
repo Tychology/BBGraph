@@ -194,16 +194,22 @@ public:
 	{
 		std::vector<Op> tokenSequence;
 		std::vector<double> nums;
+		int maxStackSize = 0;
 
 		if (!tokenize(exprStr, tokenSequence, nums)) return false;
 
 		//Try to parse as postfix. If it fails, try to convert from infix to postfix, then try to parse as postfix again
-		if (!parsePostfix(tokenSequence))
+
+		maxStackSize = parsePostfix(tokenSequence);
+		if (maxStackSize == 0)
 		{
-			if (!infixToPostfix(tokenSequence)) return false;
+			maxStackSize = infixToPostfix(tokenSequence);
+			if (maxStackSize == 0) return false;
 			if (!parsePostfix(tokenSequence)) return false;
 		}
 
+
+		processingStack.resize(maxStackSize);
 
 		std::swap(byteCode, tokenSequence); //Make threadsafe
 		std::swap(numberConstants, nums);
@@ -219,13 +225,13 @@ public:
 
 		if (byteCode.empty()) return 0;
 
-		std::vector<double> stack;
-		stack.resize(100);
+		//std::vector<double> stack;
+		//stack.resize(100);
 		int top = -1;
 
 		auto* codePtr = byteCode.data();
 		auto* numPtr = numberConstants.data();
-		auto* stackPtr = stack.data();
+		auto* stackPtr = processingStack.data();
 
 		int nextNum = 0;
 
@@ -265,7 +271,7 @@ public:
 			case bitxor: stackPtr[top - 1] = (int)stackPtr[top - 1] ^ (int)stackPtr[top];
 				--top;
 				break;
-			case lshift: stackPtr[top - 1] = (int)stackPtr[top - 1] << (int)stackPtr[top];
+			case lshift: stackPtr[top - 1] = (long)stackPtr[top - 1] << (int)stackPtr[top];
 				--top;
 				break;
 			case rshift: stackPtr[top - 1] = (int)stackPtr[top - 1] >> (int)stackPtr[top];
@@ -377,7 +383,7 @@ public:
 		}
 
 
-		auto result = stack[top];
+		auto result = processingStack[top];
 
 		return isinf(result) || isnan(result) ? 0.0 : result;
 	}
@@ -558,7 +564,7 @@ private:
 	}
 
 
-	static bool parsePostfix(std::vector<Op>& tokenSequence)
+	static int parsePostfix(const std::vector<Op>& tokenSequence)
 	{
 		int currentStackSize = 0;
 		int maxStackSize = 0;
@@ -578,7 +584,13 @@ private:
 			if (maxStackSize < currentStackSize) maxStackSize = currentStackSize;
 		}
 
-		return currentStackSize == 1;
+		//Return the maxStackSize if sequence is grammatically correct
+		if (currentStackSize == 1)
+		{
+			return maxStackSize;
+		}
+
+		return false;
 	}
 
 
@@ -654,5 +666,5 @@ private:
 
 	std::vector<Op> byteCode;
 	std::vector<double> numberConstants;
-	
+	std::vector<double> processingStack;
 };

@@ -24,8 +24,7 @@ InternalNodeGraph::InternalNodeGraph(ByteBeatNodeGraphAudioProcessor& p, Paramet
 }
 
 InternalNodeGraph::~InternalNodeGraph()
-{
-}
+= default;
 
 
 void InternalNodeGraph::Node::setParentGraph(InternalNodeGraph* const graph) const
