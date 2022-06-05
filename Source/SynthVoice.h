@@ -30,7 +30,6 @@ public:
 	{
 		adsr.setSampleRate(sampleRate);
 		//byte.prepareToPlay(sampleRate);
-
 		
 		juce::ADSR::Parameters adsrParams;
 

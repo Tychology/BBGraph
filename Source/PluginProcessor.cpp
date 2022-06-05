@@ -37,6 +37,10 @@ ByteBeatNodeGraphAudioProcessor::ByteBeatNodeGraphAudioProcessor()
     synth.addVoice(new SynthVoice());
     synth.addVoice(new SynthVoice());
     synth.addVoice(new SynthVoice());
+    synth.addVoice(new SynthVoice());
+    synth.addVoice(new SynthVoice());
+    synth.addVoice(new SynthVoice());
+    synth.addVoice(new SynthVoice());
 }
 
 ByteBeatNodeGraphAudioProcessor::~ByteBeatNodeGraphAudioProcessor()
@@ -48,6 +52,7 @@ ByteBeatNodeGraphAudioProcessor::~ByteBeatNodeGraphAudioProcessor()
 void ByteBeatNodeGraphAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     synth.setCurrentPlaybackSampleRate(sampleRate);
+    synth.setNoteStealingEnabled(false);
 
    for (int i = 0; i < synth.getNumVoices(); ++i)
     {
@@ -155,6 +160,7 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
         apvts.getRawParameterValue("Sustain")->load(),
         apvts.getRawParameterValue("Release")->load()
     };
+
 
     for (int i = 0; i < synth.getNumVoices(); ++i)
     {

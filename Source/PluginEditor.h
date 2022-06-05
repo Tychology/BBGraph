@@ -64,22 +64,22 @@ public:
         addAndMakeVisible(decaySlider);
     	decaySlider.setTextBoxStyle(decaySlider.NoTextBox, false, 0,0);
     	decaySlider.setSliderStyle(attackSlider.RotaryHorizontalVerticalDrag);
-        attackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Decay", attackSlider);
+        decaySliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Decay", decaySlider);
 
         addAndMakeVisible(sustainSlider);
     	sustainSlider.setTextBoxStyle(sustainSlider.NoTextBox, false, 0,0);
     	sustainSlider.setSliderStyle(attackSlider.RotaryHorizontalVerticalDrag);
-        attackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Sustain", attackSlider);
+        sustainSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Sustain", sustainSlider);
 
         addAndMakeVisible(releaseSlider);
     	releaseSlider.setTextBoxStyle(releaseSlider.NoTextBox, false, 0,0);
     	releaseSlider.setSliderStyle(attackSlider.RotaryHorizontalVerticalDrag);
-        attackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Release", attackSlider);
+        releaseSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Release", releaseSlider);
 
         addAndMakeVisible(volumeSlider);
         volumeSlider.setTextBoxStyle(volumeSlider.NoTextBox, false, 0,0);
         volumeSlider.setSliderStyle(attackSlider.RotaryHorizontalVerticalDrag);
-        attackSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Volume", attackSlider);
+        volumeSliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.apvts, "Volume", volumeSlider);
 
 
         addAndMakeVisible(adsrLabel);

@@ -242,22 +242,22 @@ BEGIN_JUCER_METADATA
           textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <SLIDER name="decaySlider" id="8b76f938070c7db0" memberName="decaySlider"
-          virtualName="" explicitFocusOrder="0" pos="88 0 1046M 104" min="0.0"
+          virtualName="" explicitFocusOrder="0" pos="88 0 114M 104" min="0.0"
           max="10.0" int="0.0" style="Rotary" textBoxPos="TextBoxBelow"
           textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <SLIDER name="sustainSlider" id="c8244fb75e6a89d5" memberName="sustainSlider"
-          virtualName="" explicitFocusOrder="0" pos="176 0 1046M 104" min="0.0"
+          virtualName="" explicitFocusOrder="0" pos="176 0 114M 104" min="0.0"
           max="10.0" int="0.0" style="Rotary" textBoxPos="TextBoxBelow"
           textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <SLIDER name="releaseSlider" id="3dd01c7d4ddf64f2" memberName="releaseSlider"
-          virtualName="" explicitFocusOrder="0" pos="264 0 1046M 104" min="0.0"
+          virtualName="" explicitFocusOrder="0" pos="264 0 114M 104" min="0.0"
           max="10.0" int="0.0" style="Rotary" textBoxPos="TextBoxBelow"
           textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <SLIDER name="attackSlider" id="26304e359f61a1ca" memberName="attackSlider5"
-          virtualName="" explicitFocusOrder="0" pos="400 0 1046M 104" min="0.0"
+          virtualName="" explicitFocusOrder="0" pos="400 0 114M 104" min="0.0"
           max="10.0" int="0.0" style="Rotary" textBoxPos="TextBoxBelow"
           textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>

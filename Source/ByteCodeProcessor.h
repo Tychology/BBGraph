@@ -654,4 +654,5 @@ private:
 
 	std::vector<Op> byteCode;
 	std::vector<double> numberConstants;
+	
 };

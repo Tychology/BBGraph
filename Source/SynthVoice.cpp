@@ -63,7 +63,7 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int sta
         channels[1][i] += stereoSample.right;
     }
 
-    adsr.applyEnvelopeToBuffer(outputBuffer, 0, outputBuffer.getNumSamples());
+    adsr.applyEnvelopeToBuffer(outputBuffer, startSample,numSamples);
 
 	if (!adsr.isActive())
 	{
