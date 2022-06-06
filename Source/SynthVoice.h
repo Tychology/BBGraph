@@ -26,57 +26,38 @@ public:
 	void controllerMoved(int controllerNumber, int newControllerValue) override;
 	void renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
 
-	void SynthVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outputChannels)
-	{
-		adsr.setSampleRate(sampleRate);
-		//byte.prepareToPlay(sampleRate);
-		
-		juce::ADSR::Parameters adsrParams;
 
-		adsrParams.attack = 0.f;
-		adsrParams.decay = 0.f;
-		adsrParams.sustain = 1.f;
-		adsrParams.release = 0.f;
-		
-		adsr.setParameters(adsrParams);
-	}
-	
-
-	void sync(juce::AudioPlayHead::CurrentPositionInfo& positionInfo)
-	{
-		processorSequence->sync(positionInfo, getSampleRate());
-
-	}
-
-	void setBPM(double bpm)
-	{
-		if (processorSequence == nullptr) return;
-		processorSequence->setBPM(bpm, getSampleRate());
-	}
+	void prepareToPlay(double sampleRate, int samplesPerBlock, int outputChannels);
 
 
-	void setTimes(double timeInSeconds, juce::int64 timeInSamples)
-	{
-		if (processorSequence == nullptr) return;
-		processorSequence->setTimes( timeInSeconds,  timeInSamples, getSampleRate());
-	}
+	//void sync(juce::AudioPlayHead::CurrentPositionInfo& positionInfo)
+	//{
+	//	processorSequence->sync(positionInfo, getSampleRate());
 
-	void setProcessorSequence(NodeProcessorSequence* sequence)
-	{
-		processorSequence = std::unique_ptr<NodeProcessorSequence>(sequence);
-	}
+	//}
+
+	//void setBPM(double bpm)
+	//{
+	//	if (processorSequence == nullptr) return;
+	//	processorSequence->setBPM(bpm, getSampleRate());
+	//}
 
 
-	void updateADSR(juce::ADSR::Parameters parameters)
-	{
-		adsr.setParameters(parameters);
-	}
+	//void setTimes(double timeInSeconds, juce::int64 timeInSamples)
+	//{
+	//	if (processorSequence == nullptr) return;
+	//	processorSequence->setTimes( timeInSeconds,  timeInSamples, getSampleRate());
+	//}
 
+	void setProcessorSequence(NodeProcessorSequence* sequence);
+
+
+	void update (juce::ADSR::Parameters parameters, double bps, double freeSeconds, double freeSamples, double positionSeconds, double positionSamples);
 
 private:
 	juce::ADSR adsr;
 	std::unique_ptr<NodeProcessorSequence> processorSequence;
-	//InternalNodeGraph
+	
 
 };
 

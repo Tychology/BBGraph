@@ -50,7 +50,7 @@ private:
 class ExpressionNodeProcessor : public NodeProcessor
 {
 public:
-    ExpressionNodeProcessor(ByteCodeProcessor& p, CounterValues& cv) : NodeProcessor(none), counterValues(cv), processor(p)
+    ExpressionNodeProcessor(ByteCodeProcessor& p, GlobalValues& gv) : NodeProcessor(none), globalValues(gv), processor(p)
     {
     }
 
@@ -72,7 +72,7 @@ public:
                 inputValues[i] = value;
             }
 
-             outValue = processor.process(inputValues, counterValues);
+             outValue = processor.process(inputValues, globalValues);
 
         }
 
@@ -81,7 +81,8 @@ private:
 
 
     double inputValues[expr_node_num_ins] {0.f};
-    CounterValues& counterValues;
+    //CounterValues& counterValues;
+    GlobalValues& globalValues;
 
     ByteCodeProcessor& processor;
 };
@@ -180,11 +181,14 @@ public:
 
     void startNote(double sampleRate, double noteFrequency)
     {
-        counterValues.n = 0;
-        dn =  noteFrequency * 256.f / sampleRate;
+        globalValues.rs = 0;
+        globalValues.rt = 0;
+        globalValues.n = 0;
+        globalValues.nf = noteFrequency;
+        deltaN =  noteFrequency * 256 / sampleRate;
     }
 
-    void sync(juce::AudioPlayHead::CurrentPositionInfo& positionInfo, double sampleRate)
+    /*void sync(juce::AudioPlayHead::CurrentPositionInfo& positionInfo, double sampleRate)
     {
 	    counterValues.t = positionInfo.timeInSamples;
         counterValues.h = positionInfo.timeInSeconds * 256.f;
@@ -208,27 +212,30 @@ public:
         counterValues.bpm = timeInSeconds * 256.f * bpm / 60;
 
     	dh = 256.f / sampleRate;
+    }*/
+
+    void prepareToPlay(double sampleRate)
+    {
+        globalValues.fs = 0;
+        globalValues.ft = 0;
+        globalValues.ps = 0;
+        globalValues.pt = 0;
+        globalValues.rs = 0;
+        globalValues.rt = 0;
+        globalValues.n = 0;
+    	deltaS = 1 / sampleRate;
     }
 
-    //float getNextSample()
-    //{
-	   // float sampleValue = 0.f;
+    void sync(double bps, double freeSeconds, double freeSamples, double positionSeconds, double positionSamples)
+    {
+	    globalValues.bps = bps;
 
-    //    for (auto p : processors)
-    //    {
-    //        p->processNextValue();
+        globalValues.fs = freeSeconds;
+        globalValues.ft = freeSamples;
+        globalValues.ps = positionSeconds;
+        globalValues.pt = positionSamples;
+    }
 
-    //        if (p->isOutputNode) sampleValue += p->outValue;
-    //    }
-
-
-    //    ++counterValues.t;
-    //    counterValues.h += dh;
-    //    counterValues.n += dn;
-    //    counterValues.bpm += dbpm;
-
-    //    return sampleValue;
-    //}
 
    StereoSample getNextStereoSample()
     {
@@ -251,32 +258,48 @@ public:
             case right:
                 stereoSample.right += p->outValue;
                 break;
-            default: ;
             }
         }
 
 
-        ++counterValues.t;
+        /*++counterValues.t;
         counterValues.h += dh;
         counterValues.n += dn;
-        counterValues.bpm += dbpm;
+        counterValues.bpm += dbpm;*/
+
+        globalValues.fs += deltaS;
+        globalValues.ft++;
+        globalValues.ps += deltaS;
+        globalValues.pt++;
+        globalValues.rs += deltaS;
+        globalValues.rt++;
+        globalValues.n += deltaN;
 
         return stereoSample;
     }
 
     juce::OwnedArray<NodeProcessor> processors;
-     CounterValues counterValues;
+	CounterValues counterValues;
+    GlobalValues globalValues;
     //juce::ReferenceCountedArray<NodeProcessor> processors;
 
 private:
 
 
 
-	double t = 0.f;
+	/*double t = 0.f;
     double dh = 256.f / 48000;
     double dn = 0.f;
     double bpm = 0;
-    double dbpm = 0.f;
+    double dbpm = 0.f;*/
+
+    double dfs;
+    double dps;
+    double drs;
+    double dn;
+
+    double deltaS;
+    double deltaN;
 
 
 };

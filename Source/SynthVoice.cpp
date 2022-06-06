@@ -70,3 +70,31 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int sta
 		clearCurrentNote();
 	}
 }
+
+void SynthVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outputChannels)
+{
+	juce::ADSR::Parameters adsrParams;
+	adsrParams.attack = 0.f;
+	adsrParams.decay = 0.f;
+	adsrParams.sustain = 1.f;
+	adsrParams.release = 0.f;
+
+    adsr.setSampleRate(sampleRate);
+	adsr.setParameters(adsrParams);
+
+    if (processorSequence != nullptr) processorSequence->prepareToPlay(sampleRate);
+}
+
+void SynthVoice::setProcessorSequence(NodeProcessorSequence* sequence)
+{
+	processorSequence = std::unique_ptr<NodeProcessorSequence>(sequence);
+}
+
+void SynthVoice::update(juce::ADSR::Parameters parameters, double bps, double freeSeconds, double freeSamples,
+                        double positionSeconds, double positionSamples)
+{
+	adsr.setParameters(parameters);
+	if (processorSequence != nullptr) processorSequence->sync(bps, freeSeconds, freeSamples, positionSeconds, positionSamples);
+}
+
+

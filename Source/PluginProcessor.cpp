@@ -51,6 +51,9 @@ ByteBeatNodeGraphAudioProcessor::~ByteBeatNodeGraphAudioProcessor()
 //==============================================================================
 void ByteBeatNodeGraphAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    freeSeconds = 0;
+    freeSamples = 0;
+
     synth.setCurrentPlaybackSampleRate(sampleRate);
     synth.setNoteStealingEnabled(false);
 
@@ -113,24 +116,22 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
 
 
     auto playHead = getPlayHead();
+    double positionSeconds = 0;
+    double positionSamples = 0;
+
 
     if (playHead != nullptr)
     {
 		playHead->getCurrentPosition(positionInfo);
+
+    	positionSeconds = positionInfo.timeInSeconds;
+    	positionSamples = positionInfo.timeInSamples;
 
         if (syncToHost.get())
         {
 	        beatsPerMinute.set(positionInfo.bpm);
             sendChangeMessage();
         }
-
-        for (int i = 0; i < synth.getNumVoices(); ++i)
-		{
-			if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
-			{
-				voice->setTimes(positionInfo.timeInSeconds, positionInfo.timeInSamples);
-			}
-		}
 
     }
     else
@@ -142,15 +143,9 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
 	    }
     }
 
-    auto bpm = beatsPerMinute.get();
 
-    for (int i = 0; i < synth.getNumVoices(); ++i)
-    {
-	    if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
-	    {
-		    voice->setBPM(bpm);
-	    }
-    }
+    //Beats per seconds
+    auto bps = beatsPerMinute.get() / 60;
 
 
     juce::ADSR::Parameters adsrParameters
@@ -166,9 +161,13 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
     {
 	    if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
 	    {
-            voice->updateADSR(adsrParameters);
+	    	voice->update(adsrParameters, bps, freeSeconds, freeSamples, positionSeconds, positionSamples);
         }
     }
+
+
+    freeSeconds += buffer.getNumSamples() / getSampleRate();
+    freeSamples += buffer.getNumSamples();
 
 
 

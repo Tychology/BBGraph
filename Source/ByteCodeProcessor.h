@@ -19,6 +19,22 @@ struct CounterValues
 	double bpm = 0.f;
 };
 
+
+struct GlobalValues
+{
+	double fs;
+	double ft;
+	double ps;
+	double pt;
+	double rs;
+	double rt;
+	double n;
+
+	double nf;
+	double tr;
+	double bps;
+};
+
 class ByteCodeProcessor
 {
 	enum Op
@@ -79,12 +95,19 @@ class ByteCodeProcessor
 		halfpi,
 		e,
 
-		rand,
+		random,
 
-		t,
-		h,
+		fs,
+		ft,
+		ps,
+		pt,
+		rs,
+		rt,
 		n,
-		bpm,
+
+		nf,
+		tr,
+		bps,
 
 		a,
 		b,
@@ -166,13 +189,21 @@ class ByteCodeProcessor
 		{"halfPi", halfpi, 0, none, 0},
 		{"e", e, 0, none, 0},
 
-		{"rand", rand, 0, none, 0},
+		{"rand", random, 0, none, 0},
 
-
-		{"t", t, 0, none, 0},
-		{"h", h, 0, none, 0},
+		{"fs", fs, 0, none, 0},
+		{"ft", ft, 0, none, 0},
+		{"ps", ps, 0, none, 0},
+		{"pt", pt, 0, none, 0},
+		{"fs", fs, 0, none, 0},
+		{"rs", rs, 0, none, 0},
+		{"rt", rt, 0, none, 0},
 		{"n", n, 0, none, 0},
-		{"bpm", bpm, 0, none, 0},
+
+		{"nf", nf, 0, none, 0},
+		{"tr", tr, 0, none, 0},
+		{"bps", bps, 0, none, 0},
+
 
 		{"a", a, 0, none, 0},
 		{"b", b, 0, none, 0},
@@ -218,15 +249,10 @@ public:
 	}
 
 
-	double process(const double* inputValues, const CounterValues& counterValues)
+	double process(const double* inputValues, const GlobalValues globalValues) //const CounterValues& counterValues)
 	{
-		//DBG(inputValues[0]);
-		//return (std::sin(  counterValues.n / 256 * juce::MathConstants<float>::twoPi) + 1) * inpuValues[0];
-
 		if (byteCode.empty()) return 0;
 
-		//std::vector<double> stack;
-		//stack.resize(100);
 		int top = -1;
 
 		auto* codePtr = byteCode.data();
@@ -352,17 +378,32 @@ public:
 			case e: stackPtr[++top] = juce::MathConstants<double>::euler;
 				break;
 
-			case rand: stackPtr[++top] = (double)std::rand() / RAND_MAX;
+			case random: stackPtr[++top] = (double)std::rand() / RAND_MAX;
 				break;
 
-			case t: stackPtr[++top] = counterValues.t;
+			case fs: stackPtr[++top] = globalValues.fs;
 				break;
-			case h: stackPtr[++top] = counterValues.h;
+			case ft: stackPtr[++top] = globalValues.ft;
 				break;
-			case n: stackPtr[++top] = counterValues.n;
+			case ps: stackPtr[++top] = globalValues.ps;
 				break;
-			case bpm: stackPtr[++top] = counterValues.bpm;
+			case pt: stackPtr[++top] = globalValues.pt;
 				break;
+			case rs: stackPtr[++top] = globalValues.rs;
+				break;
+			case rt: stackPtr[++top] = globalValues.rt;
+				break;
+			case n: stackPtr[++top] = globalValues.n;
+				break;
+
+
+			case nf: stackPtr[++top] = globalValues.nf;
+				break;
+			case tr: stackPtr[++top] = globalValues.tr;
+				break;
+			case bps: stackPtr[++top] = globalValues.bps;
+				break;
+
 
 
 			case a: stackPtr[++top] = inputValues[0];
@@ -411,7 +452,6 @@ private:
 
 
 		auto charPtr = expressionString.text;
-		//Token token = NUM;
 
 		Op token = error;
 

@@ -34,7 +34,7 @@ NodeProcessorSequence* GraphRenderSequence::createNodeProcessorSequence(juce::Au
 		auto node = orderedNodes[i];
 		if (auto exprNode = dynamic_cast<InternalNodeGraph::ExpressionNode*>(node))
 		{
-			auto processor = new ExpressionNodeProcessor(*exprNode->processor, sequence->counterValues);
+			auto processor = new ExpressionNodeProcessor(*exprNode->processor, sequence->globalValues);
 			processor->inputs.resize(expr_node_num_ins);
 			for (auto c : node->inputs)
 			{

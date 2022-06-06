@@ -88,7 +88,8 @@ private:
 
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
-    //std::unique_ptr<InternalNodeGraph> graph;
+    double freeSeconds;
+    double freeSamples;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ByteBeatNodeGraphAudioProcessor)
