@@ -103,6 +103,11 @@ public:
     void resized() override
 	{
         auto bounds = getLocalBounds();
+
+        bounds.removeFromLeft(25);
+        volumeLabel.setBounds(bounds.removeFromLeft(60));
+        volumeSlider.setBounds(bounds.removeFromLeft(75));
+        bounds.removeFromLeft(50);
        
         syncToHostButton.setBounds(bounds.removeFromLeft(120));
         bpmLabel.setBounds(bounds.removeFromLeft(75));
@@ -110,16 +115,14 @@ public:
         bpmLabel.setEditable(true);
 
         bounds.removeFromLeft(50);
-        adsrLabel.setBounds(bounds.removeFromLeft(75));
+        adsrLabel.setBounds(bounds.removeFromLeft(50));
 
         attackSlider.setBounds(bounds.removeFromLeft(75));
         decaySlider.setBounds(bounds.removeFromLeft(75));
         sustainSlider.setBounds(bounds.removeFromLeft(75));
         releaseSlider.setBounds(bounds.removeFromLeft(75));
 
-        bounds.removeFromLeft(50);
-        volumeLabel.setBounds(bounds.removeFromLeft(75));
-        volumeSlider.setBounds(bounds.removeFromLeft(75));
+        
 	}
 
     void updateBPM ()

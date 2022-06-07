@@ -21,8 +21,8 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, i
 	auto bounds = Rectangle<float>(x, y, width, height);
     auto center = bounds.getCentre();
 
-    g.setColour(juce::Colours::red);
-    g.drawRect(bounds, 2);
+    //g.setColour(juce::Colours::red);
+    //g.drawRect(bounds, 2);
 
     bounds.reduce((width-height)/2 + 10, 10);
 
@@ -36,8 +36,8 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, i
 	Rectangle<float> r;
 	r.setLeft(center.getX() - 2);
 	r.setRight(center.getX() + 2);
-	r.setTop(bounds.getY() + 5);
-	r.setBottom(center.getY() - 20);
+	r.setTop(bounds.getY() + height / 20);
+	r.setBottom(center.getY() -  height / 6);
 
 	p.addRoundedRectangle(r, 2.f);
 
@@ -53,8 +53,8 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, i
 
 	r.setLeft(center.getX() - 2);
 	r.setRight(center.getX() + 2);
-	r.setTop(bounds.getY() - 15);
-	r.setBottom(bounds.getY() - 5);
+	r.setTop(bounds.getY() - height / 6);
+	r.setBottom(bounds.getY() - height / 15);
 	p.clear();
 	p.addRoundedRectangle(r, 2.f);
 	p.applyTransform(AffineTransform().rotated(rotaryStartAngle, center.getX(), center.getY()));
@@ -64,8 +64,8 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, i
 
     r.setLeft(center.getX() - 2);
 	r.setRight(center.getX() + 2);
-	r.setTop(bounds.getY() - 15);
-	r.setBottom(bounds.getY() - 5);
+	r.setTop(bounds.getY() - height / 6);
+	r.setBottom(bounds.getY() - height / 15);
 	p.clear();
 	p.addRoundedRectangle(r, 2.f);
 	p.applyTransform(AffineTransform().rotated(rotaryEndAngle, center.getX(), center.getY()));
@@ -743,7 +743,7 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
         paramNameLabel.setInterceptsMouseClicks(false, false);
 
 
-        setSize(200, 200);
+        setSize(120, 200);
 
     }
 
@@ -785,13 +785,13 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
         auto bounds = getLocalBounds();
 
         bounds.removeFromTop(pinSize);
-        paramNameLabel.setBounds(bounds.removeFromTop(pinSize));
-        auto lableArea = bounds.removeFromBottom(pinSize * 3);
+        paramNameLabel.setBounds(bounds.removeFromTop(pinSize * 2));
+        auto lableArea = bounds.removeFromBottom(pinSize * 2.5);
         lableArea.removeFromBottom(pinSize * 1.5);
         lableArea.reduce(pinSize * 0.5, 0);
 
 
-        bounds.reduce((bounds.getWidth()-bounds.getHeight() )/ 2, 0);
+        bounds.reduce(pinSize * 1.5, 0);
 	    paramSlider.setBounds(bounds);
 
         minLabel.setBounds(lableArea.removeFromLeft(proportionOfWidth(0.5)));
@@ -873,7 +873,7 @@ private:
 	    paramSlider.setNormalisableRange(juce::NormalisableRange<double>(start, end));
 	    paramSlider.repaint();
 
-	    paramNameLabel.setText(paramName + " : linear", juce::dontSendNotification);
+	    paramNameLabel.setText(paramName + "\nlinear", juce::dontSendNotification);
 
 	    log = false;
 	    graph.getNodeForId(nodeID)->properties.set("log", false);
@@ -892,7 +892,7 @@ private:
 	    paramSlider.repaint();
 
 	    minLabel.setText(juce::String(range.start), juce::dontSendNotification);
-	    paramNameLabel.setText(paramName + " : logarithmic", juce::dontSendNotification);
+	    paramNameLabel.setText(paramName + "\nlogarithmic", juce::dontSendNotification);
 
 	    log = true;
 	    graph.getNodeForId(nodeID)->properties.set("log", true);

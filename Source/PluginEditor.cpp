@@ -50,7 +50,7 @@ void ByteBeatNodeGraphAudioProcessorEditor::paint (juce::Graphics& g)
 void ByteBeatNodeGraphAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
-    topBar.setBounds(bounds.removeFromTop(75));
+    topBar.setBounds(bounds.removeFromTop(75).withWidth(viewport.getViewedComponent()->getWidth()));
 
     viewport.setBounds(bounds);
     audioProcessor.apvts.state.setProperty("windowWidth", getWidth(), nullptr);
