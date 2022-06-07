@@ -44,7 +44,7 @@ ByteBeatNodeGraphAudioProcessorEditor::~ByteBeatNodeGraphAudioProcessorEditor()
 //==============================================================================
 void ByteBeatNodeGraphAudioProcessorEditor::paint (juce::Graphics& g)
 {
-
+      g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 }
 
 void ByteBeatNodeGraphAudioProcessorEditor::resized()
