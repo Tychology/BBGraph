@@ -41,6 +41,7 @@ ByteBeatNodeGraphAudioProcessor::ByteBeatNodeGraphAudioProcessor()
     synth.addVoice(new SynthVoice());
     synth.addVoice(new SynthVoice());
     synth.addVoice(new SynthVoice());
+    synth.setNoteStealingEnabled(true);
 }
 
 ByteBeatNodeGraphAudioProcessor::~ByteBeatNodeGraphAudioProcessor()
@@ -118,6 +119,7 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
     auto playHead = getPlayHead();
     double positionSeconds = 0;
     double positionSamples = 0;
+    juce::AudioPlayHead::CurrentPositionInfo positionInfo;
 
 
     if (playHead != nullptr)
@@ -161,7 +163,7 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
     {
 	    if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
 	    {
-	    	voice->update(adsrParameters, bps, freeSeconds, freeSamples, positionSeconds, positionSamples);
+	    	voice->update(adsrParameters, positionInfo.isPlaying, bps, freeSeconds, freeSamples, positionSeconds, positionSamples);
         }
     }
 

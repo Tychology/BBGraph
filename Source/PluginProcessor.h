@@ -69,7 +69,7 @@ public:
     void setNodeProcessorSequence(GraphRenderSequence& sequence);
 
 
-    juce::Atomic<float> beatsPerMinute{0};
+    juce::Atomic<double> beatsPerMinute{0};
     juce::Atomic<bool> syncToHost{false};
 
 
@@ -84,7 +84,7 @@ public:
 private:
     juce::Synthesiser synth;
 
-    juce::AudioPlayHead::CurrentPositionInfo positionInfo;
+    //juce::AudioPlayHead::CurrentPositionInfo positionInfo;
 
     juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 

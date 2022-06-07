@@ -520,7 +520,7 @@ void InternalNodeGraph::restoreFromTree(const juce::ValueTree& graphTree)
 }
 
 
-//IMPLEMENT
+
   bool InternalNodeGraph::loopCheck(Node* src, Node* dest) const noexcept
 {
 	return  dest->feedsInto(src->nodeID);

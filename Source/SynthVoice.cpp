@@ -27,7 +27,7 @@ void SynthVoice::startNote(int midiNoteNumber, float velocity, juce::Synthesiser
 void SynthVoice::stopNote(float velocity, bool allowTailOff)
 {
     adsr.noteOff();
-
+    
     if (!allowTailOff || ! adsr.isActive())
     {
 	    clearCurrentNote();
@@ -88,13 +88,14 @@ void SynthVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outpu
 void SynthVoice::setProcessorSequence(NodeProcessorSequence* sequence)
 {
 	processorSequence = std::unique_ptr<NodeProcessorSequence>(sequence);
+    processorSequence->prepareToPlay(getSampleRate());
 }
 
-void SynthVoice::update(juce::ADSR::Parameters parameters, double bps, double freeSeconds, double freeSamples,
+void SynthVoice::update(juce::ADSR::Parameters parameters, bool isPlaying, double bps, double freeSeconds, double freeSamples,
                         double positionSeconds, double positionSamples)
 {
 	adsr.setParameters(parameters);
-	if (processorSequence != nullptr) processorSequence->sync(bps, freeSeconds, freeSamples, positionSeconds, positionSamples);
+	if (processorSequence != nullptr) processorSequence->sync(isPlaying, bps, freeSeconds, freeSamples, positionSeconds, positionSamples);
 }
 
 

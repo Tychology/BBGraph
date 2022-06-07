@@ -52,7 +52,7 @@ public:
 	void setProcessorSequence(NodeProcessorSequence* sequence);
 
 
-	void update (juce::ADSR::Parameters parameters, double bps, double freeSeconds, double freeSamples, double positionSeconds, double positionSamples);
+	void update (juce::ADSR::Parameters parameters, bool isPlaying, double bps, double freeSeconds, double freeSamples, double positionSeconds, double positionSamples);
 
 private:
 	juce::ADSR adsr;

@@ -223,11 +223,14 @@ public:
         globalValues.rs = 0;
         globalValues.rt = 0;
         globalValues.n = 0;
+
+        globalValues.tr = sampleRate;
     	deltaS = 1 / sampleRate;
     }
 
-    void sync(double bps, double freeSeconds, double freeSamples, double positionSeconds, double positionSamples)
+    void sync(bool _isPlaying, double bps, double freeSeconds, double freeSamples, double positionSeconds, double positionSamples)
     {
+        isPlaying = _isPlaying;
 	    globalValues.bps = bps;
 
         globalValues.fs = freeSeconds;
@@ -269,8 +272,13 @@ public:
 
         globalValues.fs += deltaS;
         globalValues.ft++;
-        globalValues.ps += deltaS;
-        globalValues.pt++;
+
+	    if (isPlaying)
+	    {
+		    globalValues.ps += deltaS;
+			globalValues.pt++;
+	    }
+
         globalValues.rs += deltaS;
         globalValues.rt++;
         globalValues.n += deltaN;
@@ -293,10 +301,8 @@ private:
     double bpm = 0;
     double dbpm = 0.f;*/
 
-    double dfs;
-    double dps;
-    double drs;
-    double dn;
+    bool isPlaying;
+
 
     double deltaS;
     double deltaN;

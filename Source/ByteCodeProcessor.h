@@ -195,7 +195,6 @@ class ByteCodeProcessor
 		{"ft", ft, 0, none, 0},
 		{"ps", ps, 0, none, 0},
 		{"pt", pt, 0, none, 0},
-		{"fs", fs, 0, none, 0},
 		{"rs", rs, 0, none, 0},
 		{"rt", rt, 0, none, 0},
 		{"n", n, 0, none, 0},
