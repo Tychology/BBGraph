@@ -84,7 +84,7 @@ InternalNodeGraph::Node* InternalNodeGraph::getNodeForId(NodeID nodeID) const
     return {};
 }
 
-InternalNodeGraph::Node::Ptr InternalNodeGraph::addNode(NodeType nodeType, NodeID nodeID)
+InternalNodeGraph::Node::Ptr InternalNodeGraph::addNode(NodeType nodeType, NodeID nodeID, bool quiet)
 {
 
 	if (nodeID == NodeID())
@@ -131,7 +131,7 @@ InternalNodeGraph::Node::Ptr InternalNodeGraph::addNode(NodeType nodeType, NodeI
     }
 
     //n->setParentGraph (this);
-    topologyChanged();
+    if (!quiet) topologyChanged();
     return n;
 
 
@@ -274,7 +274,7 @@ bool InternalNodeGraph::canConnect(const Connection& c) const
     return false;
 }
 
-bool InternalNodeGraph::addConnection(const Connection& c)
+bool InternalNodeGraph::addConnection(const Connection& c, bool quiet)
 {
 	 if (auto* source = getNodeForId (c.source.nodeID))
     {
@@ -288,7 +288,7 @@ bool InternalNodeGraph::addConnection(const Connection& c)
                 source->outputs.add ({ dest, destChan, sourceChan });
                 dest->inputs.add ({ source, sourceChan, destChan });
                 jassert (isConnected (c));
-                topologyChanged();
+                if(!quiet) topologyChanged();
                 return true;
             }
         }
@@ -465,7 +465,7 @@ void InternalNodeGraph::restoreFromTree(const juce::ValueTree& graphTree)
 
 			auto nodeID = NodeID(static_cast<int>(n.getProperty("uid")));
 
-			auto node = addNode(type, nodeID);
+			auto node = addNode(type, nodeID, true);
 
 			for (int i = 0; i < n.getNumProperties(); ++i)
 			{
@@ -510,7 +510,7 @@ void InternalNodeGraph::restoreFromTree(const juce::ValueTree& graphTree)
 			addConnection({
 				{NodeID((int)c.getProperty("srcID")), c.getProperty("srcChannel")},
 				{NodeID((int)c.getProperty("destID")), c.getProperty("destChannel")}
-			});
+			}, true);
 		}
 	}
 

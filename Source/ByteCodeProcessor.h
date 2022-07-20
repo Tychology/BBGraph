@@ -29,6 +29,7 @@ struct GlobalValues
 	double rs;
 	double rt;
 	double n;
+	double t;
 
 	double nf;
 	double tr;
@@ -104,6 +105,7 @@ class ByteCodeProcessor
 		rs,
 		rt,
 		n,
+		t,
 
 		nf,
 		tr,
@@ -198,6 +200,7 @@ class ByteCodeProcessor
 		{"rs", rs, 0, none, 0},
 		{"rt", rt, 0, none, 0},
 		{"n", n, 0, none, 0},
+		{"t", t, 0, none, 0},
 
 		{"nf", nf, 0, none, 0},
 		{"tr", tr, 0, none, 0},
@@ -267,7 +270,8 @@ public:
 			{
 			case invert: stackPtr[top] = -stackPtr[top];
 				break;
-			case add: stackPtr[top - 1] = stackPtr[top - 1] + stackPtr[top];
+			case add: jassert(top >= 1);
+				stackPtr[top - 1] = stackPtr[top - 1] + stackPtr[top];
 				--top;
 				break;
 			case subtract: stackPtr[top - 1] = stackPtr[top - 1] - stackPtr[top];
@@ -321,13 +325,13 @@ public:
 			case less: stackPtr[top - 1] = stackPtr[top - 1] < stackPtr[top];
 				--top;
 				break;
-			case lessorequal: stackPtr[top - 1] = stackPtr[top - 1] <= stackPtr[top];
+			case lessorequal: stackPtr[top - 1] = stackPtr[top - 1] < stackPtr[top] || juce::approximatelyEqual(stackPtr[top - 1], stackPtr[top]);
 				--top;
 				break;
 			case greater: stackPtr[top - 1] = stackPtr[top - 1] > stackPtr[top];
 				--top;
 				break;
-			case greaterorequal: stackPtr[top - 1] = stackPtr[top - 1] >= stackPtr[top];
+			case greaterorequal: stackPtr[top - 1] = stackPtr[top - 1] > stackPtr[top] || juce::approximatelyEqual(stackPtr[top - 1], stackPtr[top]);
 				--top;
 				break;
 
@@ -394,7 +398,8 @@ public:
 				break;
 			case n: stackPtr[++top] = globalValues.n;
 				break;
-
+			case t: stackPtr[++top] = globalValues.t;
+				break;
 
 			case nf: stackPtr[++top] = globalValues.nf;
 				break;
@@ -420,6 +425,7 @@ public:
 			case error: break;
 			default: ;
 			}
+			jassert(top >= 0);
 		}
 
 
@@ -432,6 +438,9 @@ public:
 private:
 	static Op getTokenFromString(std::string const& buffer)
 	{
+
+		//if (buffer == "t") return rt;
+
 		for (const auto& p : tokens)
 		{
 			if (buffer == p.str)

@@ -250,7 +250,7 @@ public:
 
     Node* getNodeForId (NodeID) const;
 
-    Node::Ptr addNode (NodeType nodeType, NodeID nodeId = {});
+    Node::Ptr addNode (NodeType nodeType, NodeID nodeId = {},  bool quiet = false);
 
     Node::Ptr removeNode (NodeID);
 
@@ -266,7 +266,7 @@ public:
 
     bool canConnect (const Connection&) const;
 
-    bool addConnection (const Connection&);
+    bool addConnection (const Connection&, bool quiet = false);
 
      bool removeConnection (const Connection&);
 
