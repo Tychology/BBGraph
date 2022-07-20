@@ -122,10 +122,8 @@ void ByteBeatNodeGraphAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
     juce::AudioPlayHead::CurrentPositionInfo positionInfo;
 
 
-    if (playHead != nullptr)
+    if (playHead != nullptr && playHead->getCurrentPosition(positionInfo))
     {
-		playHead->getCurrentPosition(positionInfo);
-
     	positionSeconds = positionInfo.timeInSeconds;
     	positionSamples = positionInfo.timeInSamples;
 
@@ -230,7 +228,7 @@ void ByteBeatNodeGraphAudioProcessor::setStateInformation (const void* data, int
     // whose contents will have been created by the getStateInformation() call.
 
 	auto tree = juce::ValueTree::readFromData(data, sizeInBytes);
-
+    DBG(tree.toXmlString());
     if( tree.isValid() )
     {
         apvts.replaceState(tree.getChildWithName("apvts"));

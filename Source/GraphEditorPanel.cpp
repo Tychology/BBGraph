@@ -552,6 +552,9 @@ struct GraphEditorPanel::ExpressionNodeComponent : NodeComponent
             //if(auto* node = static_cast<InternalNodeGraph::ExpressionNode*>(graph.getNodeForId(nodeID)))
             auto node = graph.getNodeForId(nodeID);
         	auto expressionString = textBox.getText();
+
+            if (node->properties.getWithDefault("expression", "").equals(expressionString)) return;
+
         	node->properties.set("expression", expressionString );
             node->update();
             updateOutlineColor(node);

@@ -185,6 +185,7 @@ public:
         globalValues.rt = 0;
         globalValues.n = 0;
         globalValues.nf = noteFrequency;
+        globalValues.t = 0;
         deltaN =  noteFrequency * 256 / sampleRate;
     }
 
@@ -223,8 +224,10 @@ public:
         globalValues.rs = 0;
         globalValues.rt = 0;
         globalValues.n = 0;
+        globalValues.t = 0;
 
         globalValues.tr = sampleRate;
+        deltaT = 8000 / sampleRate;
     	deltaS = 1 / sampleRate;
     }
 
@@ -282,6 +285,7 @@ public:
         globalValues.rs += deltaS;
         globalValues.rt++;
         globalValues.n += deltaN;
+        globalValues.t += deltaT;
 
         return stereoSample;
     }
@@ -305,6 +309,7 @@ private:
 
 
     double deltaS;
+    double deltaT;
     double deltaN;
 
 
