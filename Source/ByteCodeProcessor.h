@@ -23,16 +23,16 @@ struct CounterValues
 struct GlobalValues
 {
 	double fs;
-	double ft;
+	double f;
 	double ps;
-	double pt;
+	double p;
 	double rs;
-	double rt;
+	double r;
 	double n;
 	double t;
 
 	double nf;
-	double tr;
+	double sr;
 	double bps;
 };
 
@@ -99,16 +99,16 @@ class ByteCodeProcessor
 		random,
 
 		fs,
-		ft,
+		f,
 		ps,
-		pt,
+		p,
 		rs,
-		rt,
+		r,
 		n,
 		t,
 
 		nf,
-		tr,
+		sr,
 		bps,
 
 		a,
@@ -194,16 +194,16 @@ class ByteCodeProcessor
 		{"rand", random, 0, none, 0},
 
 		{"fs", fs, 0, none, 0},
-		{"ft", ft, 0, none, 0},
+		{"f", f, 0, none, 0},
 		{"ps", ps, 0, none, 0},
-		{"pt", pt, 0, none, 0},
+		{"p", p, 0, none, 0},
 		{"rs", rs, 0, none, 0},
-		{"rt", rt, 0, none, 0},
+		{"r", r, 0, none, 0},
 		{"n", n, 0, none, 0},
 		{"t", t, 0, none, 0},
 
 		{"nf", nf, 0, none, 0},
-		{"tr", tr, 0, none, 0},
+		{"sr", sr, 0, none, 0},
 		{"bps", bps, 0, none, 0},
 
 
@@ -236,9 +236,10 @@ public:
 		maxStackSize = parsePostfix(tokenSequence);
 		if (maxStackSize == 0)
 		{
-			maxStackSize = infixToPostfix(tokenSequence);
+			if (!infixToPostfix(tokenSequence)) return false;
+			
+			maxStackSize = parsePostfix(tokenSequence);
 			if (maxStackSize == 0) return false;
-			if (!parsePostfix(tokenSequence)) return false;
 		}
 
 
@@ -386,15 +387,15 @@ public:
 
 			case fs: stackPtr[++top] = globalValues.fs;
 				break;
-			case ft: stackPtr[++top] = globalValues.ft;
+			case f: stackPtr[++top] = globalValues.f;
 				break;
 			case ps: stackPtr[++top] = globalValues.ps;
 				break;
-			case pt: stackPtr[++top] = globalValues.pt;
+			case p: stackPtr[++top] = globalValues.p;
 				break;
 			case rs: stackPtr[++top] = globalValues.rs;
 				break;
-			case rt: stackPtr[++top] = globalValues.rt;
+			case r: stackPtr[++top] = globalValues.r;
 				break;
 			case n: stackPtr[++top] = globalValues.n;
 				break;
@@ -403,7 +404,7 @@ public:
 
 			case nf: stackPtr[++top] = globalValues.nf;
 				break;
-			case tr: stackPtr[++top] = globalValues.tr;
+			case sr: stackPtr[++top] = globalValues.sr;
 				break;
 			case bps: stackPtr[++top] = globalValues.bps;
 				break;
@@ -425,7 +426,7 @@ public:
 			case error: break;
 			default: ;
 			}
-			jassert(top >= 0);
+			jassert(top >= 0 && top < processingStack.size());
 		}
 
 
@@ -439,7 +440,7 @@ private:
 	static Op getTokenFromString(std::string const& buffer)
 	{
 
-		//if (buffer == "t") return rt;
+		//if (buffer == "t") return r;
 
 		for (const auto& p : tokens)
 		{

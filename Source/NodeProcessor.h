@@ -182,7 +182,7 @@ public:
     void startNote(double sampleRate, double noteFrequency)
     {
         globalValues.rs = 0;
-        globalValues.rt = 0;
+        globalValues.r = 0;
         globalValues.n = 0;
         globalValues.nf = noteFrequency;
         globalValues.t = 0;
@@ -218,15 +218,15 @@ public:
     void prepareToPlay(double sampleRate)
     {
         globalValues.fs = 0;
-        globalValues.ft = 0;
+        globalValues.f = 0;
         globalValues.ps = 0;
-        globalValues.pt = 0;
+        globalValues.p = 0;
         globalValues.rs = 0;
-        globalValues.rt = 0;
+        globalValues.r = 0;
         globalValues.n = 0;
         globalValues.t = 0;
 
-        globalValues.tr = sampleRate;
+        globalValues.sr = sampleRate;
         deltaT = 8000 / sampleRate;
     	deltaS = 1 / sampleRate;
     }
@@ -237,9 +237,9 @@ public:
 	    globalValues.bps = bps;
 
         globalValues.fs = freeSeconds;
-        globalValues.ft = freeSamples;
+        globalValues.f = freeSamples;
         globalValues.ps = positionSeconds;
-        globalValues.pt = positionSamples;
+        globalValues.p = positionSamples;
     }
 
 
@@ -274,16 +274,16 @@ public:
         counterValues.bpm += dbpm;*/
 
         globalValues.fs += deltaS;
-        globalValues.ft++;
+        globalValues.f++;
 
 	    if (isPlaying)
 	    {
 		    globalValues.ps += deltaS;
-			globalValues.pt++;
+			globalValues.p++;
 	    }
 
         globalValues.rs += deltaS;
-        globalValues.rt++;
+        globalValues.r++;
         globalValues.n += deltaN;
         globalValues.t += deltaT;
 
