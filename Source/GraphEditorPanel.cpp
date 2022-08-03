@@ -14,65 +14,6 @@
 #include "CustomRange.h"
 
 
-void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
-                                   float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider& slider)
-{
-	using namespace juce;
-	auto bounds = Rectangle<float>(x, y, width, height);
-    auto center = bounds.getCentre();
-
-    //g.setColour(juce::Colours::red);
-    //g.drawRect(bounds, 2);
-
-    bounds.reduce((width-height)/2 + 10, 10);
-
-
-    g.setColour(juce::Colours::grey);
-    g.fillEllipse(bounds);
-
-
-	Path p;
-
-	Rectangle<float> r;
-	r.setLeft(center.getX() - 2);
-	r.setRight(center.getX() + 2);
-	r.setTop(bounds.getY() + height / 20);
-	r.setBottom(center.getY() -  height / 6);
-
-	p.addRoundedRectangle(r, 2.f);
-
-	jassert(rotaryStartAngle < rotaryEndAngle);
-
-	auto sliderAngRad = jmap(sliderPosProportional, 0.f, 1.f, rotaryStartAngle, rotaryEndAngle);
-
-	p.applyTransform(AffineTransform().rotated(sliderAngRad, center.getX(), center.getY()));
-
-	g.setColour(juce::Colours::white);
-	g.fillPath(p);
-
-
-	r.setLeft(center.getX() - 2);
-	r.setRight(center.getX() + 2);
-	r.setTop(bounds.getY() - height / 6);
-	r.setBottom(bounds.getY() - height / 15);
-	p.clear();
-	p.addRoundedRectangle(r, 2.f);
-	p.applyTransform(AffineTransform().rotated(rotaryStartAngle, center.getX(), center.getY()));
-
-	g.setColour(juce::Colours::white);
-	g.fillPath(p);
-
-    r.setLeft(center.getX() - 2);
-	r.setRight(center.getX() + 2);
-	r.setTop(bounds.getY() - height / 6);
-	r.setBottom(bounds.getY() - height / 15);
-	p.clear();
-	p.addRoundedRectangle(r, 2.f);
-	p.applyTransform(AffineTransform().rotated(rotaryEndAngle, center.getX(), center.getY()));
-
-    g.fillPath(p);
-
-}
 
 
 struct GraphEditorPanel::PinComponent   : public Component,
@@ -714,7 +655,7 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
         paramSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
         paramSlider.setNumDecimalPlacesToDisplay(2);
         paramSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, paramSlider.getTextBoxWidth(), paramSlider.getTextBoxHeight());
-        paramSlider.setLookAndFeel(&laf);
+
         //paramSlider.setNumDecimalPlacesToDisplay(1);
 
 
@@ -752,7 +693,7 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
 
     ~ParameterNodeComponent() override
     {
-	    paramSlider.setLookAndFeel(nullptr);
+
     }
 
 
@@ -914,7 +855,7 @@ private:
 
     juce::Label minLabel, maxLabel, paramNameLabel;
 
-   LookAndFeel laf;
+
 
 };
 

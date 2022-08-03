@@ -18,6 +18,7 @@ ByteBeatNodeGraphAudioProcessorEditor::ByteBeatNodeGraphAudioProcessorEditor (By
     addAndMakeVisible(viewport);
     viewport.setViewedComponent(new GraphEditorPanel(p.apvts, graph), true);
     viewport.getViewedComponent()->setSize(4000, 4000);
+    setLookAndFeel(&laf);
 
     addAndMakeVisible(topBar);
 
@@ -38,7 +39,7 @@ ByteBeatNodeGraphAudioProcessorEditor::ByteBeatNodeGraphAudioProcessorEditor (By
 
 ByteBeatNodeGraphAudioProcessorEditor::~ByteBeatNodeGraphAudioProcessorEditor()
 {
-
+    setLookAndFeel(nullptr);
 }
 
 //==============================================================================

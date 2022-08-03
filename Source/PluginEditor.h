@@ -16,6 +16,71 @@
 //==============================================================================
 /**
 */
+
+
+struct LookAndFeel : juce::LookAndFeel_V4
+{
+	void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, juce::Slider&) override
+	{
+		using namespace juce;
+		auto bounds = Rectangle<float>(x, y, width, height);
+		auto center = bounds.getCentre();
+
+		//g.setColour(juce::Colours::red);
+		//g.drawRect(bounds, 2);
+
+		bounds.reduce((width-height)/2 + 10, 10);
+
+
+		g.setColour(juce::Colours::grey);
+		g.fillEllipse(bounds);
+
+
+		Path p;
+
+		Rectangle<float> r;
+		r.setLeft(center.getX() - 2);
+		r.setRight(center.getX() + 2);
+		r.setTop(bounds.getY() + height / 20);
+		r.setBottom(center.getY() -  height / 6);
+
+		p.addRoundedRectangle(r, 2.f);
+
+		jassert(rotaryStartAngle < rotaryEndAngle);
+
+		auto sliderAngRad = jmap(sliderPosProportional, 0.f, 1.f, rotaryStartAngle, rotaryEndAngle);
+
+		p.applyTransform(AffineTransform().rotated(sliderAngRad, center.getX(), center.getY()));
+
+		g.setColour(juce::Colours::white);
+		g.fillPath(p);
+
+
+		r.setLeft(center.getX() - 2);
+		r.setRight(center.getX() + 2);
+		r.setTop(bounds.getY() - height / 6);
+		r.setBottom(bounds.getY() - height / 15);
+		p.clear();
+		p.addRoundedRectangle(r, 2.f);
+		p.applyTransform(AffineTransform().rotated(rotaryStartAngle, center.getX(), center.getY()));
+
+		g.setColour(juce::Colours::white);
+		g.fillPath(p);
+
+		r.setLeft(center.getX() - 2);
+		r.setRight(center.getX() + 2);
+		r.setTop(bounds.getY() - height / 6);
+		r.setBottom(bounds.getY() - height / 15);
+		p.clear();
+		p.addRoundedRectangle(r, 2.f);
+		p.applyTransform(AffineTransform().rotated(rotaryEndAngle, center.getX(), center.getY()));
+
+		g.fillPath(p);
+
+	}
+};
+
+
 class TopBarComponent : public juce::Component, public juce::ChangeListener
 {
 public:
@@ -93,6 +158,7 @@ public:
     ~TopBarComponent() override
     {
 	    audioProcessor.removeChangeListener(this);
+
     }
 
 	void paint (juce::Graphics&) override
@@ -157,7 +223,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> volumeSliderAttachment;
 
 
-
     ByteBeatNodeGraphAudioProcessor& audioProcessor;
 };
 
@@ -178,6 +243,8 @@ private:
     InternalNodeGraph& graph;
     TopBarComponent topBar;
     ByteBeatNodeGraphAudioProcessor& audioProcessor;
+
+    LookAndFeel laf;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ByteBeatNodeGraphAudioProcessorEditor)
 };
