@@ -26,22 +26,18 @@ ByteBeatNodeGraphAudioProcessor::ByteBeatNodeGraphAudioProcessor()
 #elif
     :
 #endif
-	apvts(*this, nullptr, "apvts", createParameters()),
-	parameterManager(apvts),
-	graph(*this, parameterManager)
+       apvts(*this, nullptr, "apvts", createParameters()),
+       parameterManager(apvts),
+       graph(*this, parameterManager)
 {
-       // graph.addChangeListener(this);
+	 // graph.addChangeListener(this);
+	synth.addSound(new SynthSound());
+	for (int i = 0; i < total_num_voices; ++i)
+	{
+		synth.addVoice(new SynthVoice());
+	}
 
-    synth.addSound(new SynthSound());
-    synth.addVoice(new SynthVoice());
-    synth.addVoice(new SynthVoice());
-    synth.addVoice(new SynthVoice());
-    synth.addVoice(new SynthVoice());
-    synth.addVoice(new SynthVoice());
-    synth.addVoice(new SynthVoice());
-    synth.addVoice(new SynthVoice());
-    synth.addVoice(new SynthVoice());
-    synth.setNoteStealingEnabled(true);
+	synth.setNoteStealingEnabled(true);
 }
 
 ByteBeatNodeGraphAudioProcessor::~ByteBeatNodeGraphAudioProcessor()
@@ -59,12 +55,12 @@ void ByteBeatNodeGraphAudioProcessor::prepareToPlay (double sampleRate, int samp
     synth.setNoteStealingEnabled(false);
 
    for (int i = 0; i < synth.getNumVoices(); ++i)
-    {
-        if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
-        {
-	        voice->prepareToPlay(sampleRate, samplesPerBlock, getTotalNumOutputChannels());
-        }
-    }
+   {
+	   if (auto voice = dynamic_cast<SynthVoice*>(synth.getVoice(i)))
+	   {
+		   voice->prepareToPlay(sampleRate, samplesPerBlock, getTotalNumOutputChannels());
+	   }
+   }
 }
 
 void ByteBeatNodeGraphAudioProcessor::releaseResources()

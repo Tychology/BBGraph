@@ -17,3 +17,5 @@ constexpr int expr_node_num_ins = 4;
 #ifndef TOTAL_NUM_PARAMS
 constexpr int total_num_prams = 64;
 #endif
+
+constexpr int total_num_voices = 8;

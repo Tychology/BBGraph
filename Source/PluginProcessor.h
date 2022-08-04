@@ -71,15 +71,15 @@ public:
     juce::Atomic<bool> syncToHost{false};
 
 
-private:
-    //==============================================================================
-    ParameterManager parameterManager;
-
-public:
     juce::AudioProcessorValueTreeState apvts;
-    InternalNodeGraph graph;
+    
 
 private:
+    ParameterManager parameterManager;
+public:
+    InternalNodeGraph graph;
+private:
+
     juce::Synthesiser synth;
 
     //juce::AudioPlayHead::CurrentPositionInfo positionInfo;
