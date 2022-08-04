@@ -49,21 +49,22 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int sta
 
 
     //auto* left = outputBuffer.getWritePointer (0);
-    auto channels = outputBuffer.getArrayOfWritePointers();
+    auto channels = buffer.getArrayOfWritePointers();
 
     auto end = startSample + numSamples;
-
 
 
     for (int i = startSample; i < end; ++i)
     {
         auto stereoSample = processorSequence->getNextStereoSample();
 
-	    channels[0][i] += stereoSample.left;
-        channels[1][i] += stereoSample.right;
+	    channels[0][i] = stereoSample.left;
+        channels[1][i] = stereoSample.right;
     }
 
-    adsr.applyEnvelopeToBuffer(outputBuffer, startSample,numSamples);
+    adsr.applyEnvelopeToBuffer(buffer, startSample, numSamples);
+    outputBuffer.addFrom(0, startSample, buffer, 0, startSample, numSamples);
+    outputBuffer.addFrom(1, startSample, buffer, 1, startSample, numSamples);
 
 	if (!adsr.isActive())
 	{
@@ -73,6 +74,8 @@ void SynthVoice::renderNextBlock(juce::AudioBuffer<float>& outputBuffer, int sta
 
 void SynthVoice::prepareToPlay(double sampleRate, int samplesPerBlock, int outputChannels)
 {
+    buffer.setSize(outputChannels, samplesPerBlock);
+
 	juce::ADSR::Parameters adsrParams;
 	adsrParams.attack = 0.f;
 	adsrParams.decay = 0.f;

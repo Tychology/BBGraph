@@ -37,8 +37,6 @@ public:
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
-    //void changeListenerCallback (juce::ChangeBroadcaster*) override;
-
 
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;

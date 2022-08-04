@@ -57,6 +57,7 @@ public:
 private:
 	juce::ADSR adsr;
 	std::unique_ptr<NodeProcessorSequence> processorSequence;
+	juce::AudioBuffer<float> buffer;
 	
 
 };

@@ -6,40 +6,40 @@
               pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn">
   <MAINGROUP id="SwWFCp" name="ByteBeatNodeGraph">
     <GROUP id="{5C2AF268-86C8-0FE2-8257-7064165AC68F}" name="Source">
-      <FILE id="OOw7Eb" name="PluginProcessor.cpp" compile="1" resource="0"
-            file="Source/PluginProcessor.cpp"/>
-      <FILE id="IeTe14" name="PluginProcessor.h" compile="0" resource="0"
-            file="Source/PluginProcessor.h"/>
       <FILE id="Sua4ZR" name="ByteCodeProcessor.cpp" compile="1" resource="0"
             file="Source/ByteCodeProcessor.cpp"/>
-      <FILE id="WGkHbC" name="PluginEditor.cpp" compile="1" resource="0"
-            file="Source/PluginEditor.cpp"/>
       <FILE id="a7gj3I" name="ByteCodeProcessor.h" compile="0" resource="0"
             file="Source/ByteCodeProcessor.h"/>
+      <FILE id="UVza6e" name="CustomRange.h" compile="0" resource="0" file="Source/CustomRange.h"/>
+      <FILE id="ZOukmk" name="Defines.h" compile="0" resource="0" file="Source/Defines.h"/>
       <FILE id="Rq9gqo" name="GraphEditorPanel.cpp" compile="1" resource="0"
             file="Source/GraphEditorPanel.cpp"/>
-      <FILE id="ZtwJJj" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
-      <FILE id="dRfLFJ" name="InternalNodeGraph.cpp" compile="1" resource="0"
-            file="Source/InternalNodeGraph.cpp"/>
       <FILE id="dyOPSL" name="GraphEditorPanel.h" compile="0" resource="0"
             file="Source/GraphEditorPanel.h"/>
-      <FILE id="WonIXp" name="SynthVoice.cpp" compile="1" resource="0" file="Source/SynthVoice.cpp"/>
-      <FILE id="UUTNu4" name="SynthVoice.h" compile="0" resource="0" file="Source/SynthVoice.h"/>
+      <FILE id="gOpiXP" name="GraphRenderSequence.cpp" compile="1" resource="0"
+            file="Source/GraphRenderSequence.cpp"/>
+      <FILE id="cgKEDh" name="GraphRenderSequence.h" compile="0" resource="0"
+            file="Source/GraphRenderSequence.h"/>
+      <FILE id="dRfLFJ" name="InternalNodeGraph.cpp" compile="1" resource="0"
+            file="Source/InternalNodeGraph.cpp"/>
+      <FILE id="hrfqOv" name="InternalNodeGraph.h" compile="0" resource="0"
+            file="Source/InternalNodeGraph.h"/>
       <FILE id="lRK5bA" name="NodeProcessor.cpp" compile="1" resource="0"
             file="Source/NodeProcessor.cpp"/>
-      <FILE id="ZOukmk" name="Defines.h" compile="0" resource="0" file="Source/Defines.h"/>
       <FILE id="FFGlUs" name="NodeProcessor.h" compile="0" resource="0" file="Source/NodeProcessor.h"/>
       <FILE id="mftZD8" name="ParameterManager.cpp" compile="1" resource="0"
             file="Source/ParameterManager.cpp"/>
       <FILE id="Jd4l2D" name="ParameterManager.h" compile="0" resource="0"
             file="Source/ParameterManager.h"/>
-      <FILE id="cgKEDh" name="GraphRenderSequence.h" compile="0" resource="0"
-            file="Source/GraphRenderSequence.h"/>
-      <FILE id="gOpiXP" name="GraphRenderSequence.cpp" compile="1" resource="0"
-            file="Source/GraphRenderSequence.cpp"/>
-      <FILE id="UVza6e" name="CustomRange.h" compile="0" resource="0" file="Source/CustomRange.h"/>
-      <FILE id="hrfqOv" name="InternalNodeGraph.h" compile="0" resource="0"
-            file="Source/InternalNodeGraph.h"/>
+      <FILE id="WGkHbC" name="PluginEditor.cpp" compile="1" resource="0"
+            file="Source/PluginEditor.cpp"/>
+      <FILE id="ZtwJJj" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="OOw7Eb" name="PluginProcessor.cpp" compile="1" resource="0"
+            file="Source/PluginProcessor.cpp"/>
+      <FILE id="IeTe14" name="PluginProcessor.h" compile="0" resource="0"
+            file="Source/PluginProcessor.h"/>
+      <FILE id="WonIXp" name="SynthVoice.cpp" compile="1" resource="0" file="Source/SynthVoice.cpp"/>
+      <FILE id="UUTNu4" name="SynthVoice.h" compile="0" resource="0" file="Source/SynthVoice.h"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
