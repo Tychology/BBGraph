@@ -1,14 +1,5 @@
-/*
-  ==============================================================================
-
-    CustomRange.h
-    Created: 10 May 2022 5:08:00pm
-    Author:  Jonas
-
-  ==============================================================================
-*/
-
 #pragma once
+
 #include <JuceHeader.h>
 
 //https://forum.juce.com/t/why-no-logarithmic-slider/43840

@@ -1,43 +1,25 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include <JuceHeader.h>
+
 #include "InternalNodeGraph.h"
 #include "ParameterManager.h"
-#include "SynthVoice.h"
 
-
-//class InternalNodeGraph;
-
-//==============================================================================
-/**
-*/
 class ByteBeatNodeGraphAudioProcessor  : public juce::AudioProcessor , public juce::ChangeBroadcaster
-
 {
 public:
     //==============================================================================
     ByteBeatNodeGraphAudioProcessor();
-    ~ByteBeatNodeGraphAudioProcessor() override;
+    ~ByteBeatNodeGraphAudioProcessor() override = default;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
-
-   #ifndef JucePlugin_PreferredChannelConfigurations
+    
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-   #endif
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
-
-
+    
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
@@ -60,19 +42,13 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-
-   /* InternalNodeGraph& getGraph() { return graph; }
-    juce::AudioProcessorValueTreeState& getApvts() {return apvts;}*/
-
+    
     void setNodeProcessorSequence(GraphRenderSequence& sequence);
-
-
+    
     juce::Atomic<double> beatsPerMinute{0};
     juce::Atomic<bool> syncToHost{false};
-
-
-    juce::AudioProcessorValueTreeState apvts;
     
+    juce::AudioProcessorValueTreeState apvts;
 
 private:
     ParameterManager parameterManager;
@@ -81,14 +57,11 @@ public:
 private:
 
     juce::Synthesiser synth;
+    
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters() const;
 
-    //juce::AudioPlayHead::CurrentPositionInfo positionInfo;
-
-    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
-
-    double freeSeconds;
-    double freeSamples;
-
-
+    double freeSeconds = 0;
+    double freeSamples = 0;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ByteBeatNodeGraphAudioProcessor)
 };
