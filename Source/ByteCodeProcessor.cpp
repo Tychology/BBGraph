@@ -40,7 +40,7 @@ double ByteCodeProcessor::process(const double* inputValues, const GlobalValues 
 	int nextNum = 0;
 
 
-	for (auto op : byteCode)
+	for (const auto op : byteCode)
 	{
 		switch (op)
 		{
@@ -67,7 +67,7 @@ double ByteCodeProcessor::process(const double* inputValues, const GlobalValues 
 
 		case bitnot: stackPtr[top] = ~(int)stackPtr[top];
 			break;
-		casebitand: stackPtr[top - 1] = (int)stackPtr[top - 1] & (int)stackPtr[top];
+		case bitand: stackPtr[top - 1] = (int)stackPtr[top - 1] & (int)stackPtr[top];
 			--top;
 			break;
 		case bitor : stackPtr[top - 1] = (int)stackPtr[top - 1] | (int)stackPtr[top];
@@ -85,7 +85,7 @@ double ByteCodeProcessor::process(const double* inputValues, const GlobalValues 
 
 		case not: stackPtr[top] = !(int)stackPtr[top];
 			break;
-		caseand: stackPtr[top - 1] = (int)stackPtr[top - 1] && (int)stackPtr[top];
+		case and: stackPtr[top - 1] = (int)stackPtr[top - 1] && (int)stackPtr[top];
 			--top;
 			break;
 		case or : stackPtr[top - 1] = (int)stackPtr[top - 1] || (int)stackPtr[top];

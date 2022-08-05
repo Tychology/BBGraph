@@ -88,7 +88,6 @@ struct GraphEditorPanel::NodeComponent : Component, private juce::AsyncUpdater
 
 			pos += getLocalBounds().getCentre();
 
-			//!!!!!!!!!!!!!!!!!!!!!!!
 			panel.setNodePosition(nodeID,
 				{ pos.x / static_cast<double>(getParentWidth()),
 				  pos.y / static_cast<double>(getParentHeight()) });
@@ -170,9 +169,7 @@ struct GraphEditorPanel::NodeComponent : Component, private juce::AsyncUpdater
 		resized();
 	}
 
-	virtual void showPopupMenu()
-	{
-	}
+	virtual void showPopupMenu() = 0;
 
 	void handleAsyncUpdate() override { repaint(); }
 
@@ -548,11 +545,16 @@ struct GraphEditorPanel::ParameterNodeComponent : NodeComponent
 
 		addAndMakeVisible(paramSlider);
 		paramSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-		paramSlider.setNumDecimalPlacesToDisplay(2);
 		paramSlider.setTextBoxStyle(juce::Slider::TextEntryBoxPosition::TextBoxBelow, false, paramSlider.getTextBoxWidth(), paramSlider.getTextBoxHeight());
-
+		
 		sliderAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
 			apvts, paramID, paramSlider);
+
+		paramSlider.textFromValueFunction = [](double value)
+		{
+			return juce::String(value, 3);
+		};
+
 
 		addAndMakeVisible(minLabel);
 		addAndMakeVisible(maxLabel);
