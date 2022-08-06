@@ -76,9 +76,10 @@ public:
 
 		addAndMakeVisible(syncToHostButton);
 		syncToHostButton.setButtonText("Sync to host");
-		syncToHostButton.setState(audioProcessor.syncToHost.get() ? juce::ToggleButton::buttonDown : juce::ToggleButton::buttonNormal);
+		syncToHostButton.setToggleState(audioProcessor.syncToHost.get(),juce::dontSendNotification);
+		bpmLabel.setColour(juce::Label::ColourIds::outlineColourId, audioProcessor.syncToHost.get() ? juce::Colours::grey  : juce::Colours::white);
 
-		syncToHostButton.onStateChange = [this]()
+		syncToHostButton.onClick = [this]()
 		{
 			if (syncToHostButton.getToggleState())
 			{

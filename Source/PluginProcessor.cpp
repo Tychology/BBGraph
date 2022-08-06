@@ -135,6 +135,8 @@ void ByteBeatNodeGraphAudioProcessor::getStateInformation(juce::MemoryBlock& des
 
 	pluginState.addChild(apvts.state, -1, nullptr);
 	pluginState.addChild(graph.toValueTree(), -1, nullptr);
+	pluginState.setProperty("sync", syncToHost.get(), nullptr);
+	pluginState.setProperty("bpm", beatsPerMinute.get(), nullptr);
 
 	pluginState.writeToStream(mos);
 }
@@ -144,6 +146,8 @@ void ByteBeatNodeGraphAudioProcessor::setStateInformation(const void* data, int 
 	const auto tree = juce::ValueTree::readFromData(data, sizeInBytes);
 	if (tree.isValid())
 	{
+		syncToHost.set(tree.getProperty("sync"));
+		beatsPerMinute.set(tree.getProperty("bpm"));
 		apvts.replaceState(tree.getChildWithName("apvts"));
 		graph.restoreFromTree(tree.getChildWithName("graph"));
 	}
