@@ -293,7 +293,7 @@ bool ByteCodeProcessor::tokenize(juce::StringRef expressionString, std::vector<O
 
 			currentChar = charPtr.getAndAdvance();
 
-			if (juce::CharacterFunctions::isDigit(currentChar) || currentChar == '.' || currentChar == 'x')
+			if (juce::CharacterFunctions::isDigit(currentChar) || currentChar == '.')
 			{
 				buffer += (char)currentChar;
 			}
