@@ -382,11 +382,13 @@ int ByteCodeProcessor::parsePostfix(const std::vector<Op>& tokenSequence)
 		//bounds checking
 		if (op < invert || op >= lparenthesis) return false;
 
+		//check for stack underflow
+		if (currentStackSize < tokens[op].arity) return false;
+
 		//The net change in stack size of an op is 1 minus its arity
 		currentStackSize += 1 - tokens[op].arity;
 
-		//check for stack underflow
-		if (currentStackSize < 1) return false;
+		
 
 		if (maxStackSize < currentStackSize) maxStackSize = currentStackSize;
 	}
@@ -454,6 +456,7 @@ bool ByteCodeProcessor::infixToPostfix(std::vector<Op>& tokenSequence) const
 			}
 		}
 	}
+
 	while (!stack.empty())
 	{
 		auto op = stack.back();
