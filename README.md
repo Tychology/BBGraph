@@ -27,7 +27,7 @@ The four inputs of the expression node from left to right `a`, `b`, `c`, `d`
 `p` - postion pf playhead in timeline in samples  
 `rs` - seconds since note start  
 `r` - samples since note start
-`n` - equal to rs * nf * 256  
+`n` - equal to `rs` * `nf` * 256  
 `sr` - sample rate  
 `bps` - tempo in beats per seconds  
 
