@@ -3,7 +3,7 @@
 <JUCERPROJECT id="na9bLD" name="BBGraph" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               pluginVSTCategory="kPlugCategSynth" pluginCharacteristicsValue="pluginIsSynth,pluginWantsMidiIn"
-              companyName="jogoel" pluginManufacturerCode="JoGo">
+              companyName="jogoel" pluginManufacturerCode="JoGo" version="0.1.0">
   <MAINGROUP id="SwWFCp" name="BBGraph">
     <GROUP id="{5C2AF268-86C8-0FE2-8257-7064165AC68F}" name="Source">
       <FILE id="Sua4ZR" name="ByteCodeProcessor.cpp" compile="1" resource="0"
