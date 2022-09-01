@@ -28,7 +28,7 @@ The four inputs of the expression node from left to right `a`, `b`, `c`, `d`
 `rs` - seconds since note start  
 `r` - samples since note start  
 `n` - equal to `rs` * `nf` * 256  
-`nf` - frequency of the incoming MIDI note
+`nf` - frequency of the incoming MIDI note  
 `sr` - sample rate  
 `bps` - tempo in beats per seconds  
 
